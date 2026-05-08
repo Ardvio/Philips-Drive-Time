@@ -1,0 +1,2532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Philip's Drive Time — Learner Portal</title>
+<meta name="description" content="Philip's Drive Time learner portal — track your lessons, skills and progress."/>
+<meta name="theme-color" content="#060a14"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Drive Time"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+<style>
+/* ── RESET & TOKENS ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+:root{
+  --bg:       #060a14;
+  --bg2:      #0a1020;
+  --bg3:      #0e1628;
+  --blue:     #1a6bff;
+  --blue2:    #0f52d9;
+  --blue-dim: rgba(26,107,255,0.12);
+  --border:   rgba(26,107,255,0.14);
+  --border2:  rgba(255,255,255,0.07);
+  --text:     #f0f4ff;
+  --muted:    rgba(240,244,255,0.45);
+  --muted2:   rgba(240,244,255,0.25);
+  --green:    #22c55e;
+  --yellow:   #f59e0b;
+  --red:      #ef4444;
+  --sans:     'DM Sans', sans-serif;
+  --radius:   12px;
+}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* ── UTILITIES ── */
+.hidden{display:none!important}
+.flex{display:flex}
+.col{flex-direction:column}
+.gap4{gap:4px}.gap8{gap:8px}.gap12{gap:12px}.gap16{gap:16px}.gap20{gap:20px}.gap24{gap:24px}
+.align-center{align-items:center}
+.justify-between{justify-content:space-between}
+.text-muted{color:var(--muted)}
+.text-blue{color:var(--blue)}
+.text-green{color:var(--green)}
+.text-yellow{color:var(--yellow)}
+.text-red{color:var(--red)}
+.fw-600{font-weight:600}
+.fw-700{font-weight:700}
+.fs-sm{font-size:.82rem}
+.fs-xs{font-size:.74rem}
+.w-full{width:100%}
+.mt-4{margin-top:4px}.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}.mt-32{margin-top:32px}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  position:relative;
+  overflow:hidden;
+}
+.login-glow{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:600px;height:600px;
+  background:radial-gradient(ellipse,rgba(26,107,255,0.1) 0%,transparent 70%);
+  pointer-events:none;
+}
+.login-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:48px 40px;
+  width:100%;
+  max-width:420px;
+  position:relative;
+  z-index:1;
+}
+.login-logo{
+  font-family:var(--sans);
+  font-weight:700;
+  font-size:1.05rem;
+  color:var(--text);
+  margin-bottom:32px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.login-logo span{color:var(--blue)}
+.logo-dot{
+  width:8px;height:8px;
+  background:var(--blue);
+  border-radius:50%;
+}
+.login-title{
+  font-size:1.6rem;
+  font-weight:700;
+  color:var(--text);
+  letter-spacing:-0.025em;
+  margin-bottom:6px;
+}
+.login-sub{
+  font-size:.9rem;
+  color:var(--muted);
+  margin-bottom:32px;
+  line-height:1.55;
+}
+.login-tabs{
+  display:flex;
+  gap:4px;
+  background:var(--bg3);
+  border-radius:10px;
+  padding:4px;
+  margin-bottom:28px;
+}
+.login-tab{
+  flex:1;
+  padding:8px;
+  border-radius:7px;
+  border:none;
+  background:transparent;
+  color:var(--muted);
+  font-family:var(--sans);
+  font-size:.82rem;
+  font-weight:500;
+  cursor:pointer;
+  transition:background .15s,color .15s;
+}
+.login-tab.active{
+  background:var(--blue);
+  color:#fff;
+}
+.form-group{margin-bottom:16px}
+.form-label{
+  display:block;
+  font-size:.78rem;
+  font-weight:600;
+  color:var(--muted);
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  margin-bottom:7px;
+}
+.form-input{
+  width:100%;
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:9px;
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:.95rem;
+  padding:12px 14px;
+  outline:none;
+  transition:border-color .2s;
+}
+.form-input:focus{border-color:var(--blue)}
+.form-input::placeholder{color:var(--muted2)}
+.btn-primary{
+  width:100%;
+  background:var(--blue);
+  color:#fff;
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:.95rem;
+  padding:13px;
+  border-radius:9px;
+  border:none;
+  cursor:pointer;
+  transition:background .2s,transform .15s,box-shadow .2s;
+  margin-top:8px;
+}
+.btn-primary:hover{
+  background:var(--blue2);
+  transform:translateY(-1px);
+  box-shadow:0 6px 24px rgba(26,107,255,.35);
+}
+.login-error{
+  background:rgba(239,68,68,.1);
+  border:1px solid rgba(239,68,68,.25);
+  color:#fca5a5;
+  font-size:.84rem;
+  padding:10px 14px;
+  border-radius:8px;
+  margin-top:12px;
+  display:none;
+}
+.back-link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  color:var(--muted);
+  font-size:.84rem;
+  text-decoration:none;
+  margin-top:20px;
+  transition:color .2s;
+}
+.back-link:hover{color:var(--text)}
+
+/* ── APP SHELL ── */
+#app{display:none;min-height:100vh;flex-direction:column}
+
+/* ── TOP NAV ── */
+.topnav{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:rgba(6,10,20,.85);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 28px;
+  height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;
+}
+.nav-brand{
+  font-weight:700;
+  font-size:.95rem;
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.nav-brand span{color:var(--blue)}
+.nav-badge{
+  font-size:.7rem;
+  font-weight:600;
+  background:var(--blue-dim);
+  color:var(--blue);
+  border:1px solid rgba(26,107,255,.25);
+  padding:3px 9px;
+  border-radius:100px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.nav-right-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.btn-ghost{
+  background:transparent;
+  border:1px solid var(--border2);
+  color:var(--muted);
+  font-family:var(--sans);
+  font-size:.82rem;
+  font-weight:500;
+  padding:7px 14px;
+  border-radius:7px;
+  cursor:pointer;
+  transition:color .2s,border-color .2s;
+}
+.btn-ghost:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+.nav-avatar{
+  width:34px;height:34px;
+  border-radius:50%;
+  background:var(--blue);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:.82rem;
+  color:#fff;
+  cursor:default;
+  flex-shrink:0;
+}
+
+/* ── MAIN LAYOUT ── */
+.app-body{
+  display:flex;
+  flex:1;
+  overflow:hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:220px;
+  flex-shrink:0;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  padding:20px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  overflow-y:auto;
+}
+.sidebar-label{
+  font-size:.68rem;
+  font-weight:700;
+  color:var(--muted2);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  padding:8px 12px 4px;
+  margin-top:8px;
+}
+.sidebar-label:first-child{margin-top:0}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 12px;
+  border-radius:8px;
+  color:var(--muted);
+  font-size:.88rem;
+  font-weight:500;
+  cursor:pointer;
+  transition:background .15s,color .15s;
+  border:none;
+  background:transparent;
+  font-family:var(--sans);
+  text-align:left;
+  width:100%;
+}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--blue-dim);color:var(--blue)}
+.nav-icon{font-size:1rem;flex-shrink:0;width:18px;text-align:center}
+
+/* ── CONTENT AREA ── */
+.content{
+  flex:1;
+  overflow-y:auto;
+  padding:32px 36px;
+}
+
+/* ── PAGE HEADER ── */
+.page-header{
+  margin-bottom:32px;
+}
+.page-title{
+  font-size:1.5rem;
+  font-weight:700;
+  letter-spacing:-0.025em;
+  color:var(--text);
+  margin-bottom:4px;
+}
+.page-sub{font-size:.88rem;color:var(--muted)}
+
+/* ── CARDS ── */
+.card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+}
+.card-sm{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px 20px;
+}
+.card-title{
+  font-size:.78rem;
+  font-weight:600;
+  color:var(--muted);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  margin-bottom:12px;
+}
+
+/* ── STATS GRID ── */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-bottom:24px;
+}
+.stat-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+}
+.stat-val{
+  font-size:1.9rem;
+  font-weight:700;
+  letter-spacing:-0.03em;
+  color:var(--text);
+  line-height:1;
+  margin-bottom:6px;
+}
+.stat-label{
+  font-size:.78rem;
+  color:var(--muted);
+  line-height:1.4;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{
+  height:6px;
+  background:var(--bg3);
+  border-radius:100px;
+  overflow:hidden;
+  margin-top:10px;
+}
+.progress-fill{
+  height:100%;
+  background:var(--blue);
+  border-radius:100px;
+  transition:width .6s ease;
+}
+.progress-fill.green{background:var(--green)}
+.progress-fill.yellow{background:var(--yellow)}
+
+/* ── LESSON LOG ── */
+.lesson-list{display:flex;flex-direction:column;gap:12px}
+.lesson-item{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  cursor:pointer;
+  transition:border-color .2s,background .2s;
+}
+.lesson-item:hover{border-color:rgba(26,107,255,.3);background:var(--bg3)}
+.lesson-item.expanded{border-color:rgba(26,107,255,.35)}
+.lesson-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.lesson-num{
+  font-size:.72rem;
+  font-weight:700;
+  color:var(--blue);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.lesson-date{font-size:.84rem;color:var(--muted);margin-top:3px}
+.lesson-title{font-size:.95rem;font-weight:600;color:var(--text)}
+.lesson-rating{display:flex;gap:3px}
+.star{font-size:.9rem;color:var(--muted2)}
+.star.filled{color:#f59e0b}
+.lesson-body{margin-top:16px;display:none}
+.lesson-item.expanded .lesson-body{display:block}
+.lesson-topics{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.topic-chip{
+  background:var(--blue-dim);
+  border:1px solid rgba(26,107,255,.2);
+  color:var(--blue);
+  font-size:.75rem;
+  font-weight:500;
+  padding:4px 10px;
+  border-radius:100px;
+}
+.lesson-notes{
+  font-size:.87rem;
+  color:var(--muted);
+  line-height:1.65;
+  padding:14px;
+  background:var(--bg3);
+  border-radius:8px;
+  margin-bottom:14px;
+}
+.lesson-notes strong{color:var(--text);display:block;margin-bottom:4px}
+
+/* Video slot */
+.video-slot{
+  background:var(--bg3);
+  border:1px dashed var(--border2);
+  border-radius:8px;
+  padding:20px;
+  text-align:center;
+  margin-top:12px;
+}
+.video-slot.has-video{
+  border-style:solid;
+  border-color:var(--border);
+  padding:0;
+  overflow:hidden;
+}
+.video-slot video,.video-slot iframe{
+  width:100%;
+  border-radius:8px;
+  display:block;
+  max-height:280px;
+}
+.video-placeholder{
+  font-size:.82rem;
+  color:var(--muted2);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+}
+.video-placeholder-icon{font-size:1.8rem;opacity:.4}
+.video-upload-btn{
+  background:var(--blue-dim);
+  border:1px solid rgba(26,107,255,.25);
+  color:var(--blue);
+  font-family:var(--sans);
+  font-size:.78rem;
+  font-weight:600;
+  padding:6px 14px;
+  border-radius:6px;
+  cursor:pointer;
+  margin-top:4px;
+  display:none;
+}
+
+/* ── SYLLABUS / CHECKLIST ── */
+.syllabus-section{margin-bottom:28px}
+.syllabus-heading{
+  font-size:.78rem;
+  font-weight:700;
+  color:var(--muted);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:12px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
+.skill-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:11px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  gap:12px;
+}
+.skill-item:last-child{border-bottom:none}
+.skill-name{font-size:.88rem;color:var(--text);flex:1}
+.skill-status{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-shrink:0;
+}
+.status-badge{
+  font-size:.72rem;
+  font-weight:600;
+  padding:3px 10px;
+  border-radius:100px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  white-space:nowrap;
+}
+.status-badge.not-started{
+  background:rgba(239,68,68,.12);
+  color:#fca5a5;
+  border:1px solid rgba(239,68,68,.25);
+}
+.status-badge.in-progress{
+  background:rgba(245,158,11,.12);
+  color:var(--yellow);
+  border:1px solid rgba(245,158,11,.25);
+}
+.status-badge.confident{
+  background:rgba(34,197,94,.12);
+  color:var(--green);
+  border:1px solid rgba(34,197,94,.25);
+}
+.skill-toggle{
+  background:transparent;
+  border:1px solid var(--border2);
+  border-radius:6px;
+  color:var(--muted);
+  font-family:var(--sans);
+  font-size:.72rem;
+  font-weight:600;
+  padding:4px 10px;
+  cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s;
+  display:none;
+}
+.skill-toggle:hover{background:var(--bg3);color:var(--text)}
+
+/* ── MESSAGES ── */
+.messages-list{display:flex;flex-direction:column;gap:12px}
+.message-item{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px 20px;
+}
+.message-item.from-philip{border-left:3px solid var(--blue)}
+.message-meta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+.message-sender{font-size:.82rem;font-weight:600;color:var(--blue)}
+.message-time{font-size:.75rem;color:var(--muted)}
+.message-body{font-size:.9rem;color:var(--text);line-height:1.65}
+.compose-area{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  margin-top:16px;
+}
+.compose-input{
+  width:100%;
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:.9rem;
+  padding:12px 14px;
+  resize:vertical;
+  min-height:80px;
+  outline:none;
+  transition:border-color .2s;
+}
+.compose-input:focus{border-color:var(--blue)}
+.btn-send{
+  background:var(--blue);
+  color:#fff;
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:.84rem;
+  padding:9px 20px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  margin-top:10px;
+  transition:background .2s,transform .15s;
+}
+.btn-send:hover{background:var(--blue2);transform:translateY(-1px)}
+
+/* ── PUPILS LIST (instructor) ── */
+.pupil-list{display:flex;flex-direction:column;gap:10px}
+.pupil-row{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  cursor:pointer;
+  transition:border-color .2s,background .2s;
+}
+.pupil-row:hover{border-color:rgba(26,107,255,.3);background:var(--bg3)}
+.pupil-info{display:flex;align-items:center;gap:14px}
+.pupil-avatar{
+  width:38px;height:38px;
+  border-radius:50%;
+  background:var(--blue-dim);
+  border:1px solid rgba(26,107,255,.25);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:.9rem;
+  color:var(--blue);
+  flex-shrink:0;
+}
+.pupil-name{font-size:.95rem;font-weight:600;color:var(--text)}
+.pupil-meta{font-size:.8rem;color:var(--muted);margin-top:2px}
+.pupil-stats{display:flex;align-items:center;gap:20px}
+.pupil-stat{text-align:right}
+.pupil-stat-val{font-size:.95rem;font-weight:600;color:var(--text)}
+.pupil-stat-label{font-size:.72rem;color:var(--muted);margin-top:1px}
+
+/* ── ADD LESSON FORM ── */
+.add-lesson-form{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:28px;
+}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group-inner{margin-bottom:0}
+select.form-input{cursor:pointer}
+select.form-input option{background:var(--bg2)}
+.topic-select-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:6px;
+  max-height:240px;
+  overflow-y:auto;
+  padding:4px;
+}
+.topic-check{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:7px;
+  background:var(--bg3);
+  cursor:pointer;
+  font-size:.82rem;
+  color:var(--muted);
+  transition:background .15s,color .15s;
+}
+.topic-check:hover{background:var(--blue-dim);color:var(--text)}
+.topic-check input{accent-color:var(--blue);cursor:pointer}
+.topic-check.checked{background:var(--blue-dim);color:var(--blue)}
+.rating-select{display:flex;gap:6px;margin-top:4px}
+.rating-star{
+  font-size:1.4rem;
+  cursor:pointer;
+  color:var(--muted2);
+  transition:color .15s;
+}
+.rating-star.active{color:var(--yellow)}
+.btn-sm{
+  background:var(--blue);
+  color:#fff;
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:.84rem;
+  padding:9px 20px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  transition:background .2s;
+}
+.btn-sm:hover{background:var(--blue2)}
+.btn-sm-outline{
+  background:transparent;
+  color:var(--muted);
+  font-family:var(--sans);
+  font-weight:500;
+  font-size:.84rem;
+  padding:9px 20px;
+  border-radius:8px;
+  border:1px solid var(--border2);
+  cursor:pointer;
+  transition:color .2s,border-color .2s;
+}
+.btn-sm-outline:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+
+/* ── GDL COUNTDOWN (in dashboard) ── */
+.gdl-bar{
+  background:linear-gradient(135deg,rgba(26,107,255,.15),rgba(26,107,255,.06));
+  border:1px solid rgba(26,107,255,.25);
+  border-radius:var(--radius);
+  padding:18px 22px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:24px;
+  flex-wrap:wrap;
+}
+.gdl-text h4{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:2px}
+.gdl-text p{font-size:.78rem;color:var(--muted)}
+.gdl-timer{display:flex;gap:12px}
+.gdl-unit{text-align:center}
+.gdl-val{
+  font-size:1.3rem;
+  font-weight:700;
+  color:var(--blue);
+  letter-spacing:-0.02em;
+  line-height:1;
+}
+.gdl-unit-label{font-size:.65rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.gdl-book{
+  background:var(--blue);
+  color:#fff;
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:.8rem;
+  padding:8px 16px;
+  border-radius:7px;
+  text-decoration:none;
+  white-space:nowrap;
+  transition:background .2s;
+  flex-shrink:0;
+}
+.gdl-book:hover{background:var(--blue2)}
+
+/* ── NEXT LESSON CARD ── */
+.next-lesson{
+  background:var(--blue);
+  border-radius:var(--radius);
+  padding:22px;
+  margin-bottom:24px;
+  position:relative;
+  overflow:hidden;
+}
+.next-lesson::after{
+  content:'';
+  position:absolute;
+  top:-40px;right:-40px;
+  width:150px;height:150px;
+  background:rgba(255,255,255,.06);
+  border-radius:50%;
+}
+.next-lesson-label{
+  font-size:.72rem;font-weight:700;
+  color:rgba(255,255,255,.6);
+  text-transform:uppercase;letter-spacing:.08em;
+  margin-bottom:6px;
+}
+.next-lesson-date{
+  font-size:1.15rem;font-weight:700;
+  color:#fff;margin-bottom:4px;
+}
+.next-lesson-topics{font-size:.84rem;color:rgba(255,255,255,.7)}
+.next-lesson-book{
+  display:inline-block;
+  background:rgba(255,255,255,.15);
+  color:#fff;
+  font-size:.8rem;font-weight:600;
+  padding:7px 14px;
+  border-radius:7px;
+  text-decoration:none;
+  margin-top:14px;
+  transition:background .2s;
+}
+.next-lesson-book:hover{background:rgba(255,255,255,.25)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .content{padding:20px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .form-row{grid-template-columns:1fr}
+  .topic-select-grid{grid-template-columns:1fr}
+  .topnav{padding:0 16px}
+  .pupil-stats{display:none}
+}
+
+/* ── TABS ── */
+.tabs{
+  display:flex;
+  gap:4px;
+  background:var(--bg3);
+  border-radius:10px;
+  padding:4px;
+  margin-bottom:24px;
+  width:fit-content;
+}
+.tab-btn{
+  padding:8px 18px;
+  border-radius:7px;
+  border:none;
+  background:transparent;
+  color:var(--muted);
+  font-family:var(--sans);
+  font-size:.84rem;
+  font-weight:500;
+  cursor:pointer;
+  transition:background .15s,color .15s;
+}
+.tab-btn.active{background:var(--blue);color:#fff}
+
+/* ── SUCCESS TOAST ── */
+.toast{
+  position:fixed;
+  bottom:24px;right:24px;
+  background:var(--bg2);
+  border:1px solid rgba(34,197,94,.3);
+  color:var(--green);
+  padding:12px 20px;
+  border-radius:10px;
+  font-size:.88rem;
+  font-weight:500;
+  z-index:999;
+  transform:translateY(80px);
+  transition:transform .3s ease;
+  pointer-events:none;
+}
+.toast.show{transform:translateY(0)}
+.booking-quick{
+  display:block;
+  padding:12px 14px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:8px;
+  text-decoration:none;
+  transition:border-color .2s,background .2s;
+}
+.booking-quick:hover{border-color:rgba(26,107,255,.3);background:var(--bg2)}
+.msg-badge{
+  background:var(--blue);
+  color:#fff;
+  font-size:.6rem;
+  font-weight:700;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  margin-left:6px;
+  vertical-align:middle;
+}
+
+/* ── NAV BOOK DROPDOWN ── */
+.book-dropdown-nav{position:relative}
+.book-nav-menu{
+  display:none;position:absolute;top:calc(100% + 8px);right:0;
+  background:#0a1424;border:1px solid rgba(26,107,255,0.25);
+  border-radius:10px;padding:6px;min-width:200px;z-index:200;
+  box-shadow:0 16px 48px rgba(0,0,0,.4);
+}
+.book-nav-menu.open{display:block}
+.book-nav-option{
+  display:block;padding:10px 12px;border-radius:7px;
+  text-decoration:none;transition:background .15s;
+}
+.book-nav-option:hover{background:rgba(26,107,255,0.1)}
+
+/* ── SYLLABUS ACCORDION ── */
+.syllabus-accordion{margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.syllabus-accordion-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;cursor:pointer;background:var(--bg2);
+  transition:background .2s;gap:12px;
+}
+.syllabus-accordion-header:hover{background:var(--bg3)}
+.accordion-left{display:flex;align-items:center;gap:14px;flex:1}
+.accordion-title{font-size:.95rem;font-weight:600;color:var(--text)}
+.accordion-progress{font-size:.78rem;color:var(--muted);white-space:nowrap}
+.accordion-chevron{color:var(--muted);font-size:.8rem;transition:transform .25s;flex-shrink:0}
+.accordion-chevron.open{transform:rotate(180deg)}
+.syllabus-accordion-body{display:none;padding:0 20px 16px;background:var(--bg2)}
+.syllabus-accordion-body.open{display:block}
+.accordion-description{
+  font-size:.86rem;color:var(--muted);line-height:1.65;
+  padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px;
+}
+.accordion-video{
+  background:var(--bg3);border:1px dashed var(--border2);
+  border-radius:8px;padding:16px;text-align:center;margin-bottom:14px;
+}
+.accordion-video.has-video{border-style:solid;border-color:var(--border);padding:0;overflow:hidden}
+.accordion-video video,.accordion-video iframe{width:100%;border-radius:8px;display:block;max-height:240px}
+.accordion-video-placeholder{font-size:.8rem;color:var(--muted2);display:flex;flex-direction:column;align-items:center;gap:6px}
+.mini-progress{height:4px;background:var(--bg3);border-radius:100px;overflow:hidden;width:60px;flex-shrink:0}
+.mini-progress-fill{height:100%;border-radius:100px;background:var(--green)}
+
+/* ── SKILL TOGGLE COLOURS ── */
+.skill-toggle-ns{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5}
+.skill-toggle-ip{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);color:var(--yellow)}
+.skill-toggle-co{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:var(--green)}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-glow"></div>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-dot"></div>
+      Philip's <span>Drive Time</span>
+    </div>
+    <div class="login-title">Welcome back</div>
+    <p class="login-sub">Sign in to track your progress and lessons.</p>
+
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="setLoginType('pupil')">Pupil</button>
+      <button class="login-tab" onclick="setLoginType('parent')">Parent</button>
+      <button class="login-tab" onclick="setLoginType('instructor')">Instructor</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" id="login-email" type="email" placeholder="your@email.com"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="login-password" type="password" placeholder="••••••••"/>
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-error">Incorrect email or password.</div>
+
+    <div style="margin-top:16px;text-align:center;font-size:.84rem;color:var(--muted)">
+      <button onclick="showForgot()" style="background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:.82rem;font-weight:500;cursor:pointer;padding:0;text-decoration:underline">Forgot password?</button>
+    </div>
+
+    <div style="margin-top:12px;text-align:center;font-size:.84rem;color:var(--muted)">
+      New pupil? <button onclick="showRegister()" style="background:none;border:none;color:var(--blue);font-family:var(--sans);font-size:.84rem;font-weight:600;cursor:pointer;padding:0">Create an account</button>
+    </div>
+  </div>
+  <a href="index.html" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to Philip's Drive Time
+  </a>
+</div>
+
+<!-- ── FORGOT PASSWORD ── -->
+<div id="forgot-screen" style="display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;">
+  <div class="login-glow"></div>
+  <div class="login-card">
+    <div class="login-logo"><div class="logo-dot"></div>Philip's <span>Drive Time</span></div>
+    <div class="login-title">Reset password</div>
+    <p class="login-sub">Enter your email and we'll send you a reset link.</p>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" id="forgot-email" type="email" placeholder="your@email.com"/>
+    </div>
+    <button class="btn-primary" onclick="doForgot()">Send Reset Link</button>
+    <div class="login-error" id="forgot-error"></div>
+    <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:#86efac;font-size:.84rem;padding:12px 14px;border-radius:8px;margin-top:12px;display:none" id="forgot-success">
+      Reset link sent — check your email.
+    </div>
+    <div style="margin-top:20px;text-align:center;font-size:.84rem;color:var(--muted)">
+      <button onclick="showLogin()" style="background:none;border:none;color:var(--blue);font-family:var(--sans);font-size:.84rem;font-weight:600;cursor:pointer;padding:0">Back to sign in</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── REGISTER ── -->
+<div id="register-screen" style="display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;">
+  <div class="login-glow"></div>
+  <div class="login-card" style="max-width:460px">
+    <div class="login-logo">
+      <div class="logo-dot"></div>
+      Philip's <span>Drive Time</span>
+    </div>
+    <div class="login-title">Create account</div>
+    <p class="login-sub">Set up your learner portal to track lessons and progress.</p>
+
+    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">First name</label>
+        <input class="form-input" id="reg-first" type="text" placeholder="Aoife"/>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Last name</label>
+        <input class="form-input" id="reg-last" type="text" placeholder="Murphy"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" id="reg-email" type="email" placeholder="your@email.com"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone number</label>
+      <input class="form-input" id="reg-phone" type="tel" placeholder="+44 7700 000000"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Driver's licence number <span style="color:var(--muted2);font-weight:400;text-transform:none;letter-spacing:0">(8 digits — section 5 of your licence)</span></label>
+      <input class="form-input" id="reg-license" type="text" placeholder="12345678" maxlength="8" pattern="[0-9]{8}"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="reg-password" type="password" placeholder="Min. 6 characters"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Confirm password</label>
+      <input class="form-input" id="reg-confirm" type="password" placeholder="Repeat password"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Parent / guardian email <span style="color:var(--muted2);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <input class="form-input" id="reg-parent" type="email" placeholder="mum@email.com"/>
+    </div>
+
+    <button class="btn-primary" onclick="doRegister()">Create Account</button>
+    <div class="login-error" id="reg-error"></div>
+
+    <div style="margin-top:20px;text-align:center;font-size:.84rem;color:var(--muted)">
+      Already have an account? <button onclick="showLogin()" style="background:none;border:none;color:var(--blue);font-family:var(--sans);font-size:.84rem;font-weight:600;cursor:pointer;padding:0">Sign in</button>
+    </div>
+  </div>
+  <a href="index.html" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to Philip's Drive Time
+  </a>
+</div>
+
+<!-- ── APP ── -->
+<div id="app" style="display:none;flex-direction:column;min-height:100vh">
+
+  <!-- TOPNAV -->
+  <nav class="topnav">
+    <div class="nav-brand">
+      <div class="logo-dot" style="width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0"></div>
+      Philip's <span>Drive Time</span>
+      <span class="nav-badge" id="role-badge">Pupil</span>
+    </div>
+    <div class="nav-right-actions">
+      <div class="book-dropdown-nav" id="book-nav-dropdown">
+        <button class="btn-ghost" onclick="toggleNavBook()">Book a Lesson ▾</button>
+        <div class="book-nav-menu" id="book-nav-menu">
+          <a href="https://calendly.com/pa55pgh/30min" target="_blank" class="book-nav-option">
+            <div style="font-size:.85rem;font-weight:600;color:var(--text)">Standard Lesson</div>
+            <div style="font-size:.75rem;color:var(--muted)">1 hour · Mon–Fri</div>
+          </a>
+          <a href="https://calendly.com/pa55pgh/saturday-1-hour-lesson" target="_blank" class="book-nav-option">
+            <div style="font-size:.85rem;font-weight:600;color:var(--text)">Saturday Lesson</div>
+            <div style="font-size:.75rem;color:var(--muted)">1 hour · Saturday</div>
+          </a>
+          <a href="https://calendly.com/pa55pgh/test-2-hours" target="_blank" class="book-nav-option">
+            <div style="font-size:.85rem;font-weight:600;color:var(--text)">Test</div>
+            <div style="font-size:.75rem;color:var(--muted)">2 hours · Any day</div>
+          </a>
+        </div>
+      </div>
+      <div class="nav-avatar" id="user-avatar">P</div>
+      <button class="btn-ghost" onclick="logout()">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="app-body">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <!-- populated by JS -->
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content" id="content-area">
+      <!-- populated by JS -->
+    </main>
+  </div>
+</div>
+
+<!-- ── REGISTRATION CONFIRMATION ── -->
+<div id="confirm-screen" style="display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;">
+  <div class="login-glow"></div>
+  <div class="login-card" style="text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:16px">🎉</div>
+    <div class="login-logo"><div class="logo-dot"></div>Philip's <span>Drive Time</span></div>
+    <div class="login-title" style="margin-top:16px">Welcome aboard, <span id="conf-name"></span>!</div>
+    <p class="login-sub">Your account has been created successfully.</p>
+    <div style="background:rgba(26,107,255,0.1);border:1px solid rgba(26,107,255,0.25);border-radius:10px;padding:16px 20px;margin:20px 0;text-align:left">
+      <div style="font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Important</div>
+      <p style="font-size:.88rem;color:var(--text);line-height:1.6;margin:0">When booking a lesson on Calendly, always use this email address so your bookings link to your portal automatically:</p>
+      <div style="font-size:1rem;font-weight:700;color:var(--blue);margin-top:10px;word-break:break-all" id="conf-email"></div>
+    </div>
+    <button class="btn-primary" id="conf-proceed" style="width:100%">Go to my dashboard →</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+// Safety check - if Supabase didn't load, show error
+if (typeof supabase === 'undefined') {
+  document.body.innerHTML = '<div style="color:white;padding:40px;text-align:center;font-family:sans-serif"><h2>Connection error</h2><p style="opacity:.6;margin-top:8px">Please refresh the page.</p></div>';
+}
+
+const CALENDLY_URL = 'https://calendly.com/pa55pgh/30min';
+const SUPABASE_URL = 'https://lwfseimncimulusdxzwf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZnNlaW1uY2ltdWx1c2R4endmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzQ1MjYsImV4cCI6MjA5MzY1MDUyNn0.XKT6QRXch8gDs8SQImMGhqJz0Sv_iIWXLQRQT8LaKqw';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const NI_SYLLABUS = [
+  { category:'Safety & Vehicle Checks', skills:[
+    { name:'Cockpit drill (DSSSM)', desc:'DSSSM stands for Doors, Seat, Steering, Mirrors, Seatbelt. Before every drive you must check all five in order. Philip will drill this until it becomes automatic.' },
+    { name:'Tell me questions (x14 — verbal checks)', desc:'The examiner will ask you one Tell Me question before the test starts. These are verbal — you answer out loud. There are 14 possible questions covering fluid levels, lights, tyres and more.' },
+    { name:'Show me questions (x7 — demonstrated checks)', desc:'Show Me questions require you to physically demonstrate a check on the car — like showing how to check tyre pressure or operate the rear demister. One is asked during the drive.' },
+    { name:'Number plate eyesight check', desc:'At the start of the test you must read a number plate from 20 metres away. If you can\'t, the test ends immediately. Make sure your eyesight is tested before booking.' },
+  ]},
+  { category:'Controls & Moving Off', skills:[
+    { name:'Controls and instruments', desc:'You must know every control in the car — steering, pedals, gears, indicators, lights, wipers and horn. Philip will walk you through each one before you move off for the first time.' },
+    { name:'Moving off on a flat road', desc:'Moving off smoothly on a flat road using the clutch biting point, checking mirrors and blind spots, signalling if needed, and pulling away without stalling or rolling.' },
+    { name:'Moving off uphill', desc:'Hill starts require extra clutch and gas control to prevent rolling back. Philip will teach you to hold the car on the clutch biting point before releasing the handbrake.' },
+    { name:'Moving off downhill', desc:'Moving off facing downhill requires less gas than usual. You must still check all mirrors and blind spots before moving and control your speed from the start.' },
+    { name:'Normal stop', desc:'Bringing the car to a smooth, controlled stop using progressive braking — not sharp or sudden. Mirrors first, brake progressively, clutch down late, handbrake on.' },
+    { name:'Emergency stop', desc:'The examiner may ask you to perform an emergency stop. You must react quickly, brake firmly without skidding, keep the car straight, and not look in mirrors before stopping.' },
+  ]},
+  { category:'Gears & Speed', skills:[
+    { name:'Appropriate use of gears', desc:'Selecting the right gear for your speed — not too high causing the engine to struggle, not too low causing unnecessary revving. Block changing (e.g. 4th to 2nd) is acceptable and often encouraged.' },
+    { name:'Driving at moderate speeds', desc:'Driving at appropriate speeds for the road and conditions. Not too slow (which causes obstruction) and not exceeding the speed limit. Speed awareness is essential throughout your test.' },
+    { name:'Use of acceleration', desc:'Applying acceleration smoothly and progressively. Harsh acceleration is a fault. You should build speed gradually and match your acceleration to the road ahead.' },
+    { name:'Braking smoothly', desc:'Progressive braking is key. You should be braking early enough that you never need to brake sharply (except in an emergency). Late, harsh braking is a common fault.' },
+  ]},
+  { category:'Junctions', skills:[
+    { name:'Approaching junctions (MSMPSLM)', desc:'Mirror, Signal, Manoeuvre — Position, Speed, Look, Mirror. This routine must be applied every time you approach a junction. Philip will repeat this until it\'s instinctive.' },
+    { name:'T-junctions — turning left', desc:'Approaching a T-junction to turn left. Check mirrors, signal left, position left, reduce speed, stop if needed, look right-left-right before emerging when safe.' },
+    { name:'T-junctions — turning right', desc:'Turning right at a T-junction means crossing oncoming traffic. You must be sure it\'s completely safe before emerging. Creep forward gradually to improve your view if needed.' },
+    { name:'Emerging from junctions', desc:'Emerging means pulling out from a side road onto a main road. You must give way to traffic on the main road, look carefully in both directions, and only go when it\'s clearly safe.' },
+    { name:'Crossroads', desc:'At crossroads you must watch for traffic from all four directions. Uncontrolled crossroads have no markings — treat them with extra caution and be prepared to give way.' },
+    { name:'Box junctions', desc:'Yellow box junctions — you must not enter unless your exit is clear. The only exception is when turning right and you\'re only held up by oncoming traffic.' },
+  ]},
+  { category:'Roundabouts', skills:[
+    { name:'Single-lane roundabouts', desc:'Approach in the correct lane, give way to traffic already on the roundabout, signal your exit, check mirrors before exiting. Enniskillen has several roundabouts used regularly on test routes.' },
+    { name:'Multi-lane roundabouts', desc:'Choose the correct lane based on your exit — left lane for left/straight, right lane for right/going around. Maintain your lane throughout and signal your exit clearly.' },
+    { name:'Lane discipline on roundabouts', desc:'Staying in your chosen lane all the way around a roundabout without drifting. Poor lane discipline at roundabouts is one of the most common test faults.' },
+    { name:'Giving way correctly', desc:'You must give way to traffic approaching from your right on a roundabout. Only move when it\'s safe. Never force your way on — be patient and wait for a clear gap.' },
+  ]},
+  { category:'Road Position & Steering', skills:[
+    { name:'Keeping correct road position', desc:'Driving in the centre of your lane, not too close to the kerb or the centre line. Your position should be consistent and adjust appropriately for hazards ahead.' },
+    { name:'Lane discipline', desc:'Staying in the correct lane for your intended direction and not wandering between lanes. On multi-lane roads, keep left unless overtaking.' },
+    { name:'Following distance', desc:'Maintaining a safe gap from the vehicle in front — at least a two-second gap in dry conditions, doubled in wet. Tailgating is a serious fault on your test.' },
+    { name:'Steering control', desc:'Smooth, controlled steering with both hands on the wheel (except when changing gear). Avoid crossing your hands — use the push-pull technique taught by Philip.' },
+    { name:'Overtaking safely', desc:'Only overtake when it is safe, legal and necessary. You need a clear view ahead, enough space and speed to complete the manoeuvre, and must not exceed the speed limit.' },
+  ]},
+  { category:'Manoeuvres', skills:[
+    { name:'Parallel parking', desc:'Reversing into a space behind a parked car, parallel to the kerb. You must complete it accurately within two car lengths, with good observation throughout including blind spots.' },
+    { name:'Bay parking (forward)', desc:'Driving forward into a marked parking bay, keeping within the lines. You must select a target bay, steer accurately, and straighten up within the space.' },
+    { name:'Bay parking (reverse)', desc:'Reversing into a marked parking bay — considered more accurate than forward bay parking. Good all-round observation is essential throughout this manoeuvre.' },
+    { name:'Turn in the road (three-point turn)', desc:'Turning your car around in a narrow road using forward and reverse gears. Good clutch control, observation and steering accuracy are all required. Speed should be very slow throughout.' },
+  ]},
+  { category:'Independent Driving', skills:[
+    { name:'Following road signs', desc:'During independent driving you\'ll follow direction signs without instruction from the examiner. You must plan ahead, read signs early, and position correctly in good time.' },
+    { name:'Following verbal examiner directions', desc:'The examiner may give you a series of directions at the start of the independent driving section. If you go the wrong way it\'s not a fault — just continue safely.' },
+    { name:'Route planning', desc:'Anticipating what\'s coming up on your route — roundabouts, junctions, lane changes — so you\'re always prepared and positioned correctly well in advance.' },
+  ]},
+  { category:'Hazard Awareness', skills:[
+    { name:'Pedestrian crossings (zebra, pelican, puffin, toucan)', desc:'Each crossing type has different rules. Zebra: give way when someone steps on. Pelican: stop on red, proceed on flashing amber if clear. Puffin/Toucan: treat like traffic lights.' },
+    { name:'School zones', desc:'Extra caution near schools — reduced speed, watch for children running out, be prepared to stop. School zones may have crossing patrols (lollipop persons) you must obey.' },
+    { name:'Cyclists and motorcyclists', desc:'Give cyclists at least 1.5 metres of space when overtaking. Check mirrors carefully before opening doors. Look for motorcyclists at junctions — they are easily missed.' },
+    { name:'Horse riders and animals', desc:'Pass horses wide and slow — no more than 10mph. Do not rev the engine or sound the horn. If an animal is loose on the road, stop and warn other drivers.' },
+    { name:'Adverse weather — wet roads', desc:'Wet roads double your stopping distance. Reduce speed, increase following distance, use lights if visibility is reduced, and be gentle with braking and steering.' },
+    { name:'Adverse weather — fog / ice awareness', desc:'In fog use dipped headlights and fog lights if visibility is below 100 metres. In icy conditions reduce speed drastically — stopping distances can be ten times longer than normal.' },
+  ]},
+  { category:'Road Types', skills:[
+    { name:'Residential streets', desc:'Slow speed, high hazard. Watch for parked cars, children, pedestrians stepping out, and vehicles pulling out of driveways. Stay alert at all times on quiet streets.' },
+    { name:'Main roads', desc:'Higher speed, more traffic. Position correctly, match the flow of traffic, and anticipate hazards further ahead than you would on residential streets.' },
+    { name:'Dual carriageways', desc:'Two lanes each direction with a central reservation. Philip will take you on dual carriageways around Enniskillen. Joining, lane changing and exiting at speed all need practice.' },
+    { name:'Rural roads', desc:'Narrow roads, poor visibility around bends, farm vehicles, animals. Reduce speed on unfamiliar rural roads and be prepared to stop or pull in for oncoming vehicles.' },
+    { name:'Night driving awareness', desc:'Reduced visibility, harder to judge speed and distance. Use dipped headlights, increase following distance, watch for pedestrians in dark clothing, and be extra alert at junctions.' },
+  ]},
+  { category:'Test Readiness', skills:[
+    { name:'Mock test 1 completed', desc:'A full mock test under test conditions — no commentary, examiner-style assessment. Philip will identify your faults and areas to work on before booking the real thing.' },
+    { name:'Mock test 2 completed', desc:'A second mock test to assess improvement after addressing faults from mock test 1. Philip will only recommend booking your real test when you\'re consistently passing mock tests.' },
+    { name:'Theory test — passed', desc:'You must pass the theory test (multiple choice + hazard perception) before you can book your practical test. Make sure this is done well before you\'re ready to drive.' },
+    { name:'Highway Code revision', desc:'The Highway Code contains the rules of the road. The examiner\'s decisions on your test are based on it. Philip will highlight the most important sections to know.' },
+    { name:'Show me / tell me — all 21 known', desc:'There are 14 Tell Me and 7 Show Me questions in the DVA question bank. You should know all 21 before your test. Philip will test you on these regularly.' },
+  ]},
+];
+const ALL_TOPICS = NI_SYLLABUS.flatMap(s => s.skills.map(sk => sk.name));
+
+let currentUser = null, currentRole = null, currentProfile = null;
+let currentView = 'dashboard', selectedPupilId = null, addLessonRating = 4;
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) { currentUser = session.user; await loadProfileAndBoot(); }
+});
+
+async function loadProfileAndBoot() {
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+  if (!profile) { await sb.auth.signOut(); return; }
+  currentProfile = profile; currentRole = profile.role;
+  if (profile.pupil_id) selectedPupilId = profile.pupil_id;
+  bootApp();
+}
+
+function showRegister() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('register-screen').style.display = 'flex';
+}
+function showForgot() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('forgot-screen').style.display = 'flex';
+}
+function showLogin() {
+  document.getElementById('register-screen').style.display = 'none';
+  document.getElementById('forgot-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+async function doForgot() {
+  const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+  const errEl = document.getElementById('forgot-error');
+  const successEl = document.getElementById('forgot-success');
+  const btn = document.querySelector('#forgot-screen .btn-primary');
+  errEl.style.display = 'none'; successEl.style.display = 'none';
+  if (!email) { errEl.textContent = 'Please enter your email.'; errEl.style.display = 'block'; return; }
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.href
+  });
+  btn.textContent = 'Send Reset Link'; btn.disabled = false;
+  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+  successEl.style.display = 'block';
+}
+
+async function doRegister() {
+  const first = document.getElementById('reg-first').value.trim();
+  const last = document.getElementById('reg-last').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const license = document.getElementById('reg-license').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const confirm = document.getElementById('reg-confirm').value;
+  const errEl = document.getElementById('reg-error');
+  const btn = document.querySelector('#register-screen .btn-primary');
+  errEl.style.display = 'none';
+  if (!first || !last || !email || !password) { errEl.textContent = 'Please fill in all required fields.'; errEl.style.display = 'block'; return; }
+  if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display = 'block'; return; }
+  if (password !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; return; }
+  btn.textContent = 'Creating account...'; btn.disabled = true;
+  const name = first + ' ' + last;
+  const { data: authData, error: authErr } = await sb.auth.signUp({ email, password });
+  if (authErr) { errEl.textContent = authErr.message; errEl.style.display = 'block'; btn.textContent = 'Create Account'; btn.disabled = false; return; }
+  const userId = authData.user.id;
+  const { data: pupil } = await sb.from('pupils').insert({ name, email, phone, license_number: license, start_date: new Date().toISOString().split('T')[0], next_lesson_date: 'Not yet scheduled', next_lesson_topics: 'To be confirmed' }).select().single();
+  await sb.from('profiles').insert({ id: userId, name, email, phone, license_number: license, role: 'pupil', pupil_id: pupil.id });
+  await sb.from('skills').insert(ALL_TOPICS.map(skill => ({ pupil_id: pupil.id, skill_name: skill, status: 'not-started' })));
+  await sb.from('messages').insert({ pupil_id: pupil.id, sender_name: 'Philip', sender_role: 'instructor', body: `Welcome ${first}! I can see you've created your account. Get in touch to book your first lesson and we'll get started.` });
+  currentUser = authData.user;
+  currentProfile = { id: userId, name, email, role: 'pupil', pupil_id: pupil.id };
+  currentRole = 'pupil'; selectedPupilId = pupil.id;
+  document.getElementById('register-screen').style.display = 'none';
+  // Show confirmation screen before booting app
+  document.getElementById('register-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
+  const confScreen = document.getElementById('confirm-screen');
+  confScreen.style.display = 'flex';
+  document.getElementById('conf-name').textContent = first;
+  document.getElementById('conf-email').textContent = email;
+  document.getElementById('conf-proceed').onclick = () => {
+    confScreen.style.display = 'none';
+    bootApp();
+  };
+  setTimeout(() => {
+    const content = document.getElementById('content-area');
+    if (content) {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:rgba(26,107,255,0.12);border:1px solid rgba(26,107,255,0.3);border-radius:10px;padding:16px 20px;margin-bottom:20px;font-size:.88rem;color:var(--text);line-height:1.55;';
+      banner.innerHTML = `<strong style="color:var(--blue)">Important:</strong> When booking a lesson, always use <strong style="color:var(--text)">${email}</strong> as your email so your bookings appear here automatically.`;
+      content.insertBefore(banner, content.firstChild);
+    }
+  }, 600);
+}
+
+let loginType = 'pupil';
+function setLoginType(t) {
+  loginType = t;
+  document.querySelectorAll('.login-tab').forEach((b,i) => b.classList.toggle('active', ['pupil','parent','instructor'][i] === t));
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.querySelector('#login-screen .btn-primary');
+  errEl.style.display = 'none';
+  btn.textContent = 'Signing in...'; btn.disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { errEl.textContent = 'Incorrect email or password.'; errEl.style.display = 'block'; btn.textContent = 'Sign In'; btn.disabled = false; return; }
+
+  // Check role matches selected tab
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', data.user.id).single();
+  if (!profile) { errEl.textContent = 'Account not found. Please register first.'; errEl.style.display = 'block'; await sb.auth.signOut(); btn.textContent = 'Sign In'; btn.disabled = false; return; }
+  if (profile.role !== loginType) {
+    const roleLabel = profile.role === 'instructor' ? 'Instructor' : profile.role === 'parent' ? 'Parent' : 'Pupil';
+    errEl.textContent = `This account is registered as a ${roleLabel}. Please select the ${roleLabel} tab.`;
+    errEl.style.display = 'block';
+    await sb.auth.signOut();
+    btn.textContent = 'Sign In'; btn.disabled = false;
+    return;
+  }
+
+  currentUser = data.user;
+  await loadProfileAndBoot();
+  btn.textContent = 'Sign In'; btn.disabled = false;
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  currentUser = null; currentRole = null; currentProfile = null; currentView = 'dashboard';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function bootApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('register-screen').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+  document.getElementById('role-badge').textContent = currentRole === 'instructor' ? 'Instructor' : currentRole === 'parent' ? 'Parent' : 'Pupil';
+  document.getElementById('user-avatar').textContent = (currentProfile?.name || 'U').split(' ').map(n=>n[0]).join('');
+  renderSidebar(); navigate('dashboard');
+}
+
+function renderSidebar() {
+  const items = currentRole === 'instructor'
+    ? [{ label:'Main', items:[
+        {id:'dashboard', icon:'⬡', label:'Dashboard'},
+        {id:'diary',     icon:'📆', label:'Diary'},
+        {id:'bookings',  icon:'📅', label:'Bookings'},
+        {id:'pupils',    icon:'👥', label:'My Pupils'},
+        {id:'messages',  icon:'💬', label:'Messages'},
+        {id:'finances',  icon:'💰', label:'Finances'},
+      ]}]
+    : [{ label:'My Progress', items:[
+        {id:'dashboard', icon:'⬡', label:'Dashboard'},
+        {id:'bookings',  icon:'📅', label:'My Bookings'},
+        {id:'lessons',   icon:'📋', label:'Lesson Log'},
+        {id:'syllabus',  icon:'✓',  label:'Skills Checklist'},
+        {id:'messages',  icon:'💬', label:'Messages'},
+        {id:'profile',   icon:'👤', label:'My Profile'},
+      ]}];
+  document.getElementById('sidebar').innerHTML = items.map(g => `<div class="sidebar-label">${g.label}</div>${g.items.map(i => `<button class="nav-item${i.id===currentView?' active':''}" onclick="navigate('${i.id}')"><span class="nav-icon">${i.icon}</span>${i.label}${i.id==='messages'?'<span class="msg-badge" id="msg-badge" style="display:none">!</span>':''}</button>`).join('')}`).join('');
+  // Check for unread messages
+  checkUnreadMessages();
+}
+
+async function navigate(view) {
+  currentView = view; renderSidebar();
+  if (view === 'messages') {
+    const badge = document.getElementById('msg-badge');
+    if (badge) badge.style.display = 'none';
+  }
+  const content = document.getElementById('content-area');
+  content.innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;font-size:.9rem">Loading...</div>';
+  if (currentRole === 'instructor') {
+    if (view === 'dashboard') await renderInstructorDashboard(content);
+    else if (view === 'diary') await renderDiary(content);
+    else if (view === 'bookings') await renderBookings(content);
+    else if (view === 'calendar') renderCalendar(content);
+    else if (view === 'pupils') await renderPupilsList(content);
+    else if (view === 'messages') await renderMessages(content, selectedPupilId);
+    else if (view === 'finances') await renderFinances(content);
+  } else {
+    const pupil = await fetchPupil(selectedPupilId || currentProfile.pupil_id);
+    if (view === 'dashboard') renderPupilDashboard(content, pupil);
+    else if (view === 'bookings') await renderPupilBookings(content, pupil);
+    else if (view === 'lessons') renderLessons(content, pupil);
+    else if (view === 'syllabus') await renderSyllabus(content, pupil);
+    else if (view === 'messages') await renderMessages(content, pupil.id);
+    else if (view === 'profile') await renderPupilProfile(content, pupil);
+  }
+}
+
+async function fetchPupil(pupilId) {
+  const { data: pupil } = await sb.from('pupils').select('*').eq('id', pupilId).single();
+  const { data: lessons } = await sb.from('lessons').select('*').eq('pupil_id', pupilId).order('lesson_num');
+  const { data: skillRows } = await sb.from('skills').select('*').eq('pupil_id', pupilId);
+  const { data: msgs } = await sb.from('messages').select('*').eq('pupil_id', pupilId).order('created_at');
+  const skills = {};
+  (skillRows||[]).forEach(s => { skills[s.skill_name] = s.status; });
+  return {
+    ...pupil, startDate: pupil.start_date, totalLessons: (lessons||[]).length,
+    nextLesson: { date: pupil.next_lesson_date, topics: pupil.next_lesson_topics },
+    skills,
+    lessons: (lessons||[]).map(l => ({ ...l, num: l.lesson_num, video: l.video_url, topics: l.topics||[] })),
+    messages: (msgs||[]).map(m => ({ ...m, from: m.sender_role==='instructor'?'philip':'pupil', sender: m.sender_name, time: new Date(m.created_at).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}), body: m.body }))
+  };
+}
+
+async function fetchAllPupils(includeArchived = false) {
+  let query = sb.from('pupils').select('*').order('created_at');
+  if (!includeArchived) query = query.eq('archived', false);
+  const { data: pupils } = await query;
+  const result = [];
+  for (const p of (pupils||[])) result.push(await fetchPupil(p.id));
+  return result;
+}
+
+function renderPupilDashboard(el, pupil) {
+  const confident = Object.values(pupil.skills).filter(s=>s==='confident').length;
+  const inProg = Object.values(pupil.skills).filter(s=>s==='in-progress').length;
+  const total = ALL_TOPICS.length;
+  const pct = Math.round((confident/total)*100);
+  const gdl = new Date('2026-10-01'), diff = gdl - new Date();
+  const days = Math.max(0,Math.floor(diff/86400000)), hours = Math.max(0,Math.floor((diff%86400000)/3600000)), mins = Math.max(0,Math.floor((diff%3600000)/60000));
+  const start = new Date(pupil.startDate), eligible = new Date(start);
+  eligible.setMonth(eligible.getMonth()+6);
+  const eligibleStr = eligible.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const daysToEligible = Math.max(0,Math.ceil((eligible-new Date())/86400000));
+  el.innerHTML = `
+    <div class="page-header"><div class="page-title">Hey, ${pupil.name.split(' ')[0]}</div><div class="page-sub">Here's where you're at with your lessons.</div></div>
+    ${pupil.test_date ? (() => {
+      const td = new Date(pupil.test_date);
+      const daysTo = Math.ceil((td - new Date()) / 86400000);
+      const colour = daysTo <= 7 ? 'var(--red)' : daysTo <= 14 ? 'var(--yellow)' : 'var(--green)';
+      return daysTo > 0 ? `<div style="background:${colour}12;border:1px solid ${colour}33;border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div style="font-size:.84rem;color:var(--text);font-weight:600">🎯 Test date: ${td.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+        <div style="font-size:1rem;font-weight:700;color:${colour}">${daysTo} day${daysTo!==1?'s':''} to go</div>
+      </div>` : `<div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:.88rem;color:#86efac;font-weight:600">🎉 Test day is today — good luck!</div>`;
+    })() : ''}
+    ${pupil.lessons.length > 0 ? `
+    <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:.84rem;color:#86efac;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <span>Philip has logged your last lesson — <strong style="color:#fff">Lesson ${pupil.lessons[pupil.lessons.length-1].num}: ${pupil.lessons[pupil.lessons.length-1].title}</strong></span>
+      <button class="btn-sm-outline" style="font-size:.78rem;padding:5px 12px;color:#86efac;border-color:rgba(34,197,94,.3)" onclick="navigate('lessons')">View →</button>
+    </div>` : ''}
+    <div style="background:rgba(26,107,255,0.08);border:1px solid rgba(26,107,255,0.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:.84rem;color:var(--muted);line-height:1.55">
+      When booking a lesson, always use <strong style="color:var(--text)">${pupil.email}</strong> so your bookings link to this account automatically.
+    </div>
+    <div class="next-lesson">
+      <div class="next-lesson-label">Next lesson</div>
+      <div class="next-lesson-date">${pupil.nextLesson.date}</div>
+      <div class="next-lesson-topics">Topics: ${pupil.nextLesson.topics}</div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <a href="https://calendly.com/pa55pgh/30min" target="_blank" class="next-lesson-book">Standard £40</a>
+        <a href="https://calendly.com/pa55pgh/saturday-1-hour-lesson" target="_blank" class="next-lesson-book">Saturday £45</a>
+        <a href="https://calendly.com/pa55pgh/test-2-hours" target="_blank" class="next-lesson-book">Test</a>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val">${pupil.totalLessons}</div><div class="stat-label">Lessons completed</div></div>
+      <div class="stat-card"><div class="stat-val">${confident}</div><div class="stat-label">Skills confident</div></div>
+      <div class="stat-card"><div class="stat-val">${inProg}</div><div class="stat-label">In progress</div></div>
+      <div class="stat-card"><div class="stat-val">${pct}%</div><div class="stat-label">Overall readiness</div><div class="progress-bar" style="margin-top:8px"><div class="progress-fill" style="width:${pct}%"></div></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card">
+        <div class="card-title">Recent lessons</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${pupil.lessons.slice(-3).reverse().map(l=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><div><div style="font-size:.88rem;font-weight:600;color:var(--text)">Lesson ${l.num}</div><div style="font-size:.78rem;color:var(--muted)">${formatDate(l.date)}</div></div><div class="lesson-rating">${stars(l.rating)}</div></div>`).join('')}
+        </div>
+        <button class="btn-sm-outline w-full" style="margin-top:14px" onclick="navigate('lessons')">View all lessons</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Skills overview</div>
+        ${NI_SYLLABUS.slice(0,5).map(cat=>{ const conf=cat.skills.filter(sk=>pupil.skills[sk.name]==='confident').length; const p=Math.round((conf/cat.skills.length)*100); return `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font-size:.82rem;color:var(--text)">${cat.category}</span><span style="font-size:.75rem;color:var(--muted)">${conf}/${cat.skills.length}</span></div><div class="progress-bar"><div class="progress-fill${p===100?' green':p>50?' ':' yellow'}" style="width:${p}%"></div></div></div>`; }).join('')}
+        <button class="btn-sm-outline w-full" style="margin-top:6px" onclick="navigate('syllabus')">Full checklist</button>
+      </div>
+    </div>`;
+}
+
+async function renderPupilProfile(el, pupil) {
+  el.innerHTML = `
+    <div class="page-header">
+      <div class="page-title">My Profile</div>
+      <div class="page-sub">Update your personal details</div>
+    </div>
+    <div class="add-lesson-form" style="max-width:500px">
+      <div class="form-group">
+        <label class="form-label">Full name</label>
+        <input class="form-input" id="prof-name" type="text" value="${pupil.name||''}"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" id="prof-email" type="email" value="${pupil.email||''}" disabled style="opacity:.5;cursor:not-allowed"/>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Email cannot be changed — contact Philip if needed.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone number</label>
+        <input class="form-input" id="prof-phone" type="tel" value="${pupil.phone||''}" placeholder="+44 7700 000000"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Driver's licence number <span style="color:var(--muted2);font-weight:400;text-transform:none;letter-spacing:0">(8 digits — section 5 of your licence)</span></label>
+        <input class="form-input" id="prof-license" type="text" value="${pupil.license_number||''}" placeholder="12345678" maxlength="8"/>
+      </div>
+      <div class="flex gap12 align-center" style="margin-top:8px">
+        <button class="btn-sm" onclick="saveProfile('${pupil.id}')">Save Changes</button>
+      </div>
+      <div id="prof-success" style="display:none;margin-top:12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:#86efac;font-size:.84rem;padding:10px 14px;border-radius:8px">
+        Profile updated successfully.
+      </div>
+      <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border)">
+        <div class="card-title" style="margin-bottom:8px">Share progress with parents</div>
+        <p style="font-size:.84rem;color:var(--muted);margin-bottom:12px">Share this link with your parents so they can view your progress without needing a login.</p>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="form-input" id="share-link" type="text" value="https://sparkling-blini-33cc58.netlify.app/progress.html?pupil=${pupil.id}" readonly style="font-size:.78rem;opacity:.7;flex:1;min-width:0"/>
+          <button class="btn-sm" onclick="copyShareLink()">Copy Link</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function saveProfile(pupilId) {
+  const name    = document.getElementById('prof-name').value.trim();
+  const phone   = document.getElementById('prof-phone').value.trim();
+  const license = document.getElementById('prof-license').value.trim();
+  if (!name) { showToast('Name cannot be empty'); return; }
+  await sb.from('pupils').update({ name, phone, license_number: license }).eq('id', pupilId);
+  await sb.from('profiles').update({ name, phone, license_number: license }).eq('id', currentUser.id);
+  currentProfile.name = name;
+  document.getElementById('user-avatar').textContent = name.split(' ').map(n=>n[0]).join('');
+  document.getElementById('prof-success').style.display = 'block';
+  showToast('Profile updated');
+}
+
+async function renderPupilBookings(el, pupil) {
+  const { data: bookings } = await sb.from('bookings')
+    .select('*')
+    .eq('pupil_id', pupil.id)
+    .order('start_time', { ascending: true });
+
+  const now = new Date();
+  const upcoming = (bookings||[]).filter(b => new Date(b.start_time) >= now && b.status !== 'cancelled');
+  const past     = (bookings||[]).filter(b => new Date(b.start_time) < now && b.status !== 'cancelled');
+  const cancelled = (bookings||[]).filter(b => b.status === 'cancelled');
+
+  const bookingRow = (b, showCancel = false) => {
+    const date = new Date(b.start_time);
+    const timeStr = date.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const dateStr = date.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long'});
+    const colour = b.lesson_type==='Saturday Lesson'?'var(--yellow)':b.lesson_type==='Test'?'var(--green)':'var(--blue)';
+    return `<div class="card-sm">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="background:var(--bg3);border-radius:8px;padding:8px 12px;text-align:center;min-width:48px">
+            <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase">${date.toLocaleDateString('en-GB',{month:'short'})}</div>
+            <div style="font-size:1.3rem;font-weight:700;color:var(--text);line-height:1">${date.getDate()}</div>
+          </div>
+          <div>
+            <div style="font-size:.9rem;font-weight:600;color:var(--text)">${dateStr} · ${timeStr}</div>
+            <div style="font-size:.8rem;color:var(--muted);margin-top:2px">Pickup: ${b.pickup_location||'Not specified'}</div>
+          </div>
+        </div>
+        <span style="font-size:.75rem;font-weight:600;color:${colour};background:${colour}18;padding:4px 12px;border-radius:100px;border:1px solid ${colour}33">${b.lesson_type}</span>
+      </div>
+      ${showCancel ? `
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div style="font-size:.78rem;color:var(--muted)">Need to cancel or reschedule? Do it via your Calendly confirmation email or contact Philip directly.</div>
+          <a href="https://calendly.com/pa55pgh" target="_blank" class="btn-sm-outline" style="font-size:.78rem;padding:6px 14px">Cancel / Reschedule →</a>
+        </div>
+      ` : ''}
+    </div>`;
+  };
+
+  el.innerHTML = `
+    <div class="page-header">
+      <div class="page-title">My Bookings</div>
+      <div class="page-sub">${upcoming.length} upcoming · ${past.length} completed</div>
+    </div>
+
+    <div class="card" style="background:rgba(26,107,255,0.06);border-color:rgba(26,107,255,0.2);margin-bottom:24px;padding:16px 20px">
+      <div style="font-size:.88rem;color:var(--muted);margin-bottom:12px">Book your next lesson:</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="https://calendly.com/pa55pgh/30min" target="_blank" class="next-lesson-book">Standard £40</a>
+        <a href="https://calendly.com/pa55pgh/saturday-1-hour-lesson" target="_blank" class="next-lesson-book">Saturday £45</a>
+        <a href="https://calendly.com/pa55pgh/test-2-hours" target="_blank" class="next-lesson-book">Test</a>
+      </div>
+    </div>
+
+    ${upcoming.length > 0 ? `
+      <div class="card-title" style="margin-bottom:10px">Upcoming</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">
+        ${upcoming.map(b => bookingRow(b, true)).join('')}
+      </div>
+    ` : `<div class="card" style="text-align:center;padding:32px;margin-bottom:24px;color:var(--muted)">No upcoming lessons booked yet.</div>`}
+
+    ${past.length > 0 ? `
+      <div class="card-title" style="margin-bottom:10px">Completed</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">
+        ${past.map(b => `<div style="opacity:.55">${bookingRow(b)}</div>`).join('')}
+      </div>
+    ` : ''}
+
+    ${cancelled.length > 0 ? `
+      <div class="card-title" style="margin-bottom:10px;color:var(--red)">Cancelled</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${cancelled.map(b => `<div style="opacity:.4">${bookingRow(b)}</div>`).join('')}
+      </div>
+    ` : ''}
+  `;
+}
+
+function renderLessons(el, pupil) {
+  el.innerHTML = `<div class="page-header flex justify-between align-center" style="flex-wrap:wrap;gap:12px"><div><div class="page-title">Lesson Log</div><div class="page-sub">${pupil.totalLessons} lessons completed</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a href="https://calendly.com/pa55pgh/30min" target="_blank" class="next-lesson-book">Standard £40</a><a href="https://calendly.com/pa55pgh/saturday-1-hour-lesson" target="_blank" class="next-lesson-book">Saturday £45</a><a href="https://calendly.com/pa55pgh/test-2-hours" target="_blank" class="next-lesson-book">Test</a></div></div><div class="lesson-list">${pupil.lessons.slice().reverse().map(l=>lessonCard(l)).join('')}</div>`;
+}
+
+function lessonCard(l) {
+  return `<div class="lesson-item" id="lesson-${l.id}" onclick="toggleLesson('${l.id}')">
+    <div class="lesson-header"><div><div class="lesson-num">Lesson ${l.num} · ${l.duration} min</div><div class="lesson-title">${l.title}</div><div class="lesson-date">${formatDate(l.date)}</div></div><div class="lesson-rating">${stars(l.rating)}</div></div>
+    <div class="lesson-body">
+      <div class="lesson-topics">${(l.topics||[]).map(t=>`<span class="topic-chip">${t}</span>`).join('')}</div>
+      <div class="lesson-notes"><strong>Philip's notes</strong>${l.notes||''}</div>
+      <div class="video-slot${l.video?' has-video':''}">${l.video?`<video controls src="${l.video}"></video>`:`<div class="video-placeholder"><div class="video-placeholder-icon">▶</div><div>No video for this lesson yet</div></div>`}</div>
+    </div>
+  </div>`;
+}
+
+function toggleLesson(id) { document.getElementById('lesson-'+id)?.classList.toggle('expanded'); }
+
+async function renderSyllabus(el, pupil) {
+  const confident = Object.values(pupil.skills).filter(s=>s==='confident').length;
+  const total = ALL_TOPICS.length, pct = Math.round((confident/total)*100);
+
+  // Fetch all videos from Supabase
+  const { data: videoRows } = await sb.from('skill_videos').select('*');
+  const videos = {};
+  (videoRows||[]).forEach(v => { videos[v.skill_name] = v.video_url; });
+
+  // Skills with no video needed
+  const NO_VIDEO_CATS = ['Road Types', 'Test Readiness'];
+
+  let accIdx = 0;
+  el.innerHTML = `
+    <div class="page-header">
+      <div class="page-title">Skills Checklist</div>
+      <div class="page-sub">${confident} of ${total} skills confident · ${pct}% complete</div>
+    </div>
+    <div class="progress-bar" style="margin-bottom:28px;height:8px">
+      <div class="progress-fill" style="width:${pct}%"></div>
+    </div>
+    ${NI_SYLLABUS.map(cat => {
+      const catConf = cat.skills.filter(sk => pupil.skills[sk.name]==='confident').length;
+      const allConf = catConf === cat.skills.length;
+      const anyProg = cat.skills.some(sk => pupil.skills[sk.name]==='in-progress');
+      const headColour = allConf ? 'var(--green)' : anyProg ? 'var(--yellow)' : 'var(--muted)';
+      const noVideo = NO_VIDEO_CATS.includes(cat.category);
+      return `
+        <div style="margin-bottom:24px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+            <div style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue)">${cat.category}</div>
+            <div style="font-size:.75rem;color:${headColour}">${catConf}/${cat.skills.length} confident</div>
+          </div>
+          ${cat.skills.map(sk => {
+            const i = accIdx++;
+            const status = pupil.skills[sk.name] || 'not-started';
+            const videoUrl = videos[sk.name];
+            const embedHtml = (!noVideo && videoUrl) ? youtubeEmbed(videoUrl) : '';
+            return `
+              <div class="syllabus-accordion" id="acc-${i}" style="margin-bottom:6px">
+                <div class="syllabus-accordion-header" onclick="toggleAccordion(${i})" style="padding:13px 16px">
+                  <div style="flex:1">
+                    <div class="accordion-title" style="font-size:.88rem">${sk.name}</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <span class="status-badge ${status}">${statusLabel(status)}</span>
+                    <span class="accordion-chevron" id="chev-${i}">▼</span>
+                  </div>
+                </div>
+                <div class="syllabus-accordion-body" id="body-${i}">
+                  <div class="accordion-description">${sk.desc}</div>
+                  ${embedHtml}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
+function youtubeEmbed(url) {
+  // Extract video ID from various YouTube URL formats
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  if (!match) return '';
+  const id = match[1];
+  return `<div class="accordion-video has-video" style="border-style:solid;border-color:var(--border);padding:0;border-radius:8px;overflow:hidden;margin-bottom:8px">
+    <iframe width="100%" height="220" src="https://www.youtube.com/embed/${id}" 
+      title="Video" frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen style="display:block"></iframe>
+  </div>`;
+}
+
+function toggleAccordion(i) {
+  const body = document.getElementById('body-'+i);
+  const chev = document.getElementById('chev-'+i);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+}
+
+async function renderMessages(el, pupilId) {
+  if (!pupilId) { el.innerHTML = '<div style="padding:40px;color:var(--muted)">Select a pupil first.</div>'; return; }
+  const { data: msgs } = await sb.from('messages').select('*').eq('pupil_id', pupilId).order('created_at');
+  const { data: pupil } = await sb.from('pupils').select('name').eq('id', pupilId).single();
+  el.innerHTML = `<div class="page-header"><div class="page-title">Messages</div><div class="page-sub">${currentRole==='instructor'?(pupil?.name||''):'With Philip'}</div></div>
+    <div class="messages-list" id="msg-list">
+      ${(msgs||[]).map(m=>`<div class="message-item from-${m.sender_role==='instructor'?'philip':'pupil'}"><div class="message-meta"><span class="message-sender">${m.sender_name}</span><span class="message-time">${new Date(m.created_at).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div><div class="message-body">${m.body}</div></div>`).join('')}
+    </div>
+    <div class="compose-area"><textarea class="compose-input" id="compose-text" placeholder="Type a message..."></textarea><button class="btn-send" onclick="sendMessage('${pupilId}')">Send Message</button></div>`;
+}
+
+async function sendMessage(pupilId) {
+  const text = document.getElementById('compose-text').value.trim();
+  if (!text) return;
+  await sb.from('messages').insert({ pupil_id: pupilId, sender_name: currentProfile.name, sender_role: currentRole, body: text });
+  document.getElementById('compose-text').value = '';
+  await renderMessages(document.getElementById('content-area'), pupilId);
+  showToast('Message sent');
+}
+
+async function renderBookings(el) {
+  const { data: bookings } = await sb.from('bookings').select('*').order('start_time', { ascending: true });
+  const upcoming = (bookings||[]).filter(b => new Date(b.start_time) >= new Date() && b.status !== 'cancelled');
+  const past = (bookings||[]).filter(b => new Date(b.start_time) < new Date());
+  const { data: pupils } = await sb.from('pupils').select('id, name, email').order('name');
+
+  el.innerHTML = `
+    <div class="page-header flex justify-between align-center" style="flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="page-title">Bookings</div>
+        <div class="page-sub">${upcoming.length} upcoming · ${past.length} past</div>
+      </div>
+      <button class="btn-sm" onclick="toggleManualBooking()">+ Add Manual Booking</button>
+    </div>
+
+    <div id="manual-booking-form" style="display:none">
+      <div class="add-lesson-form" style="margin-bottom:24px">
+        <div style="font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:16px">Add a phone/walk-in booking</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Pupil name</label>
+            <input class="form-input" id="mb-name" type="text" placeholder="Full name"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone number</label>
+            <input class="form-input" id="mb-phone" type="tel" placeholder="+44 7700 000000"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email (optional — links to portal account)</label>
+          <input class="form-input" id="mb-email" type="email" placeholder="their@email.com"/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Date & Time</label>
+            <input class="form-input" id="mb-datetime" type="datetime-local"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Lesson type</label>
+            <select class="form-input" id="mb-type">
+              <option>Standard Lesson</option>
+              <option>Saturday Lesson</option>
+              <option>Test</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pickup location</label>
+          <select class="form-input" id="mb-pickup">
+            <option>St Michael's</option>
+            <option>St Joseph's</option>
+            <option>Dunnes</option>
+            <option>Mount Lourdes</option>
+            <option>St Frances</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="flex gap12 align-center">
+          <button class="btn-sm" onclick="submitManualBooking()">Save Booking</button>
+          <button class="btn-sm-outline" onclick="toggleManualBooking()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    ${upcoming.length === 0 ? `
+      <div class="card" style="text-align:center;padding:48px">
+        <div style="font-size:1.5rem;margin-bottom:12px;opacity:.3">📅</div>
+        <div style="font-size:.9rem;color:var(--muted)">No upcoming bookings yet.</div>
+        <div style="font-size:.82rem;color:var(--muted2);margin-top:6px">Bookings from Calendly appear automatically. Add phone bookings with the button above.</div>
+      </div>
+    ` : `
+      <div class="card-title" style="margin-bottom:12px">Upcoming</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:32px">
+        ${upcoming.map(b => bookingCard(b)).join('')}
+      </div>
+    `}
+
+    ${past.length > 0 ? `
+      <div class="card-title" style="margin-bottom:12px">Past</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${past.map(b => bookingCard(b, true)).join('')}
+      </div>
+    ` : ''}
+  `;
+}
+
+function toggleManualBooking() {
+  const f = document.getElementById('manual-booking-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitManualBooking() {
+  const name     = document.getElementById('mb-name').value.trim();
+  const phone    = document.getElementById('mb-phone').value.trim();
+  const email    = document.getElementById('mb-email').value.trim().toLowerCase();
+  const datetime = document.getElementById('mb-datetime').value;
+  const type     = document.getElementById('mb-type').value;
+  const pickup   = document.getElementById('mb-pickup').value;
+  if (!name || !datetime) { showToast('Please fill in name and date/time'); return; }
+
+  // Try to link to existing pupil by email
+  let pupilId = null;
+  if (email) {
+    const { data: pupil } = await sb.from('pupils').select('id').eq('email', email).single();
+    if (pupil) pupilId = pupil.id;
+  }
+
+  await sb.from('bookings').insert({
+    calendly_event_id: 'manual-' + Date.now(),
+    invitee_name: name,
+    invitee_email: email || '',
+    lesson_type: type,
+    start_time: new Date(datetime).toISOString(),
+    pickup_location: pickup,
+    status: 'active',
+    pupil_id: pupilId,
+  });
+
+  showToast('Booking added');
+  await navigate('bookings');
+}
+
+function bookingCard(b, isPast = false) {
+  const date = new Date(b.start_time);
+  const timeStr = date.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+  const typeColour = b.lesson_type === 'Saturday Lesson' ? 'var(--yellow)' : b.lesson_type === 'Test' ? 'var(--green)' : 'var(--blue)';
+  const nameEl = b.pupil_id
+    ? `<div style="font-size:.95rem;font-weight:600;color:var(--blue);cursor:pointer;text-decoration:underline" onclick="openPupil('${b.pupil_id}')">${b.invitee_name}</div>`
+    : `<div style="font-size:.95rem;font-weight:600;color:var(--text)">${b.invitee_name}</div>`;
+
+  return `
+    <div class="card-sm" style="opacity:${isPast?'.5':'1'}">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="text-align:center;background:var(--bg3);border-radius:8px;padding:10px 14px;min-width:52px">
+            <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">${date.toLocaleDateString('en-GB',{month:'short'})}</div>
+            <div style="font-size:1.4rem;font-weight:700;color:var(--text);line-height:1">${date.getDate()}</div>
+          </div>
+          <div>
+            ${nameEl}
+            <div style="font-size:.8rem;color:var(--muted);margin-top:2px">${b.invitee_email}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+          <div>
+            <div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Time</div>
+            <div style="font-size:.88rem;font-weight:600;color:var(--text)">${timeStr}</div>
+          </div>
+          <div>
+            <div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Pickup</div>
+            <div style="font-size:.88rem;font-weight:600;color:var(--text)">${b.pickup_location||'Not specified'}</div>
+          </div>
+          <div>
+            <div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Type</div>
+            <span style="font-size:.75rem;font-weight:600;color:${typeColour};background:rgba(255,255,255,.05);padding:3px 10px;border-radius:100px;border:1px solid ${typeColour}33">${b.lesson_type}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCalendar(el) {
+  el.innerHTML = `
+    <div class="page-header">
+      <div class="page-title">Your Calendar</div>
+      <div class="page-sub">All upcoming bookings from Calendly</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;min-height:600px">
+      <iframe src="https://calendly.com/pa55pgh?embed_domain=sparkling-blini-33cc58.netlify.app&embed_type=inline&hide_landing_page_details=1&hide_gdpr_banner=1"
+        width="100%" height="700" frameborder="0" style="display:block"></iframe>
+    </div>
+    <div style="margin-top:16px;font-size:.82rem;color:var(--muted);text-align:center">
+      Bookings made by pupils appear here automatically. 
+      <a href="https://calendly.com/pa55pgh" target="_blank" style="color:var(--blue);text-decoration:none">Open in Calendly →</a>
+    </div>
+  `;
+}
+
+async function renderInstructorDashboard(el) {
+  const pupils = await fetchAllPupils();
+  const totalLessons = pupils.reduce((a,p)=>a+p.totalLessons,0);
+  const { data: bookings } = await sb.from('bookings').select('*').order('start_time', { ascending: true });
+  const upcoming = (bookings||[]).filter(b => new Date(b.start_time) >= new Date());
+
+  el.innerHTML = `<div class="page-header"><div class="page-title">Good to see you, Philip</div><div class="page-sub">Manage your pupils and track their progress.</div></div>
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+      <div class="stat-card"><div class="stat-val">${pupils.length}</div><div class="stat-label">Active pupils</div></div>
+      <div class="stat-card"><div class="stat-val">${totalLessons}</div><div class="stat-label">Total lessons logged</div></div>
+      <div class="stat-card"><div class="stat-val">${upcoming.length}</div><div class="stat-label">Upcoming bookings</div></div>
+    </div>
+
+    ${upcoming.length > 0 ? `
+      <div class="card-title" style="margin-bottom:12px">Next bookings</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+        ${upcoming.slice(0,3).map(b => bookingCard(b)).join('')}
+      </div>
+      ${upcoming.length > 3 ? `<button class="btn-sm-outline" style="margin-bottom:24px" onclick="navigate('bookings')">View all ${upcoming.length} bookings →</button>` : ''}
+    ` : `
+      <div class="card" style="text-align:center;padding:32px;margin-bottom:24px">
+        <div style="font-size:.88rem;color:var(--muted)">No upcoming bookings yet — they'll appear here automatically when pupils book on Calendly.</div>
+      </div>
+    `}
+
+    <div class="card-title" style="margin-bottom:12px">Your pupils</div>
+    <div class="pupil-list">
+      ${pupils.map(p=>{ const conf=Object.values(p.skills).filter(s=>s==='confident').length; const pct=Math.round((conf/ALL_TOPICS.length)*100); return `<div class="pupil-row" onclick="openPupil('${p.id}')"><div class="pupil-info"><div class="pupil-avatar">${p.name.split(' ').map(n=>n[0]).join('')}</div><div><div class="pupil-name">${p.name}</div><div class="pupil-meta">Started ${formatDate(p.startDate)} · Next: ${p.nextLesson.date}</div></div></div><div class="pupil-stats"><div class="pupil-stat"><div class="pupil-stat-val">${p.totalLessons}</div><div class="pupil-stat-label">Lessons</div></div><div class="pupil-stat"><div class="pupil-stat-val">${pct}%</div><div class="pupil-stat-label">Ready</div></div></div></div>`; }).join('')}
+    </div>`;
+}
+
+async function openPupil(id) { selectedPupilId = id; await renderPupilView(id); }
+
+async function renderPupilView(pupilId) {
+  const el = document.getElementById('content-area');
+  el.innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center">Loading...</div>';
+  const pupil = await fetchPupil(pupilId);
+  el.innerHTML = `
+    <div class="page-header flex justify-between align-center" style="flex-wrap:wrap;gap:12px">
+      <div><button class="btn-ghost" style="margin-bottom:12px" onclick="navigate('pupils')">← Back</button><div class="page-title">${pupil.name}</div><div class="page-sub">${pupil.totalLessons} lessons · Started ${formatDate(pupil.startDate)}</div></div>
+      <button class="btn-sm-outline" style="color:var(--muted);font-size:.82rem" onclick="archivePupil('${pupil.id}','${pupil.name}')">Archive Pupil</button>
+    </div>
+    <div class="card" style="margin-bottom:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+      <div><div style="font-size:.7rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Email</div><div style="font-size:.85rem;color:var(--text)">${pupil.email}</div></div>
+      <div><div style="font-size:.7rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Phone</div><div style="font-size:.85rem;color:var(--text)">${pupil.phone||'Not provided'}</div></div>
+      <div><div style="font-size:.7rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Licence No.</div><div style="font-size:.85rem;color:var(--text)">${pupil.license_number||'Not provided'}</div></div>
+      <div><div style="font-size:.7rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Started</div><div style="font-size:.85rem;color:var(--text)">${formatDate(pupil.startDate)}</div></div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchPupilTab(this,'tab-lessons')">Lessons</button>
+      <button class="tab-btn" onclick="switchPupilTab(this,'tab-skills')">Skills</button>
+      <button class="tab-btn" onclick="switchPupilTab(this,'tab-add')">Add Lesson</button>
+      <button class="tab-btn" onclick="switchPupilTab(this,'tab-msgs')">Messages</button>
+    </div>
+    <div id="tab-lessons"><div class="lesson-list">${pupil.lessons.slice().reverse().map(l=>lessonCardInstructor(l,pupilId)).join('')}</div></div>
+    <div id="tab-skills" class="hidden">
+      ${NI_SYLLABUS.map(cat=>`<div class="syllabus-section"><div class="syllabus-heading">${cat.category}</div>${cat.skills.map(sk=>{const st=pupil.skills[sk.name]||'not-started';return `<div class="skill-item"><div class="skill-name">${sk.name}</div><div class="skill-status"><button class="skill-toggle ${skillToggleClass(st)}" style="display:block" onclick="cycleSkill('${pupilId}','${sk.name.replace(/'/g,"\\'")}',this,event)">${statusLabel(st)} ↻</button></div></div>`;}).join('')}</div>`).join('')}
+    </div>
+    <div id="tab-add" class="hidden">
+      <div class="add-lesson-form">
+        <div style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:20px">Log a lesson for ${pupil.name}</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="al-date" value="${new Date().toISOString().split('T')[0]}"/></div>
+          <div class="form-group"><label class="form-label">Duration</label><select class="form-input" id="al-duration"><option value="60">60 minutes</option><option value="90">90 minutes</option><option value="120">2 hours</option></select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Lesson title</label><input class="form-input" type="text" id="al-title" placeholder="e.g. Roundabouts and lane discipline"/></div>
+        <div class="form-group"><label class="form-label">Topics covered</label><div class="topic-select-grid" id="topic-grid">${ALL_TOPICS.map(t=>`<label class="topic-check" onclick="this.classList.toggle('checked')"><input type="checkbox" value="${t}" style="pointer-events:none"/> ${t}</label>`).join('')}</div></div>
+        <div class="form-group"><label class="form-label">Notes (visible to pupil & parent)</label><textarea class="form-input compose-input" id="al-notes" placeholder="What went well, what needs work..." style="min-height:100px"></textarea></div>
+        <div class="form-group"><label class="form-label">Rating</label><div class="rating-select" id="rating-select">${[1,2,3,4,5].map(n=>`<span class="rating-star${n<=addLessonRating?' active':''}" onclick="setRating(${n})">★</span>`).join('')}</div></div>
+        <div class="form-group"><label class="form-label">Next lesson topics</label><input class="form-input" type="text" id="al-next-topics" placeholder="e.g. Parallel parking" value="${pupil.nextLesson.topics}"/></div>
+        <div class="form-group"><label class="form-label">Next lesson date / time</label><input class="form-input" type="text" id="al-next-date" placeholder="e.g. Saturday 16 May, 10:00am" value="${pupil.nextLesson.date}"/></div>
+        <div class="form-group"><label class="form-label">Test date <span style="color:var(--muted2);font-weight:400;text-transform:none;letter-spacing:0">(optional — shown on pupil dashboard)</span></label><input class="form-input" type="date" id="al-test-date" value="${pupil.test_date||''}"/></div>
+        <div class="flex gap12 align-center" style="margin-top:8px">
+          <button class="btn-sm" onclick="submitLesson('${pupilId}')">Save Lesson</button>
+          <button class="btn-sm-outline" onclick="switchPupilTab(document.querySelector('.tab-btn'),'tab-lessons')">Cancel</button>
+        </div>
+      </div>
+    </div>
+    <div id="tab-msgs" class="hidden">
+      <div class="messages-list">${pupil.messages.map(m=>`<div class="message-item from-${m.from}"><div class="message-meta"><span class="message-sender">${m.sender}</span><span class="message-time">${m.time}</span></div><div class="message-body">${m.body}</div></div>`).join('')}</div>
+      <div class="compose-area"><textarea class="compose-input" id="compose-text" placeholder="Message ${pupil.name}..."></textarea><button class="btn-send" onclick="sendMessage('${pupilId}')">Send Message</button></div>
+    </div>`;
+}
+
+function lessonCardInstructor(l, pupilId) {
+  return `<div class="lesson-item" id="lesson-${l.id}" onclick="toggleLesson('${l.id}')">
+    <div class="lesson-header"><div><div class="lesson-num">Lesson ${l.num} · ${l.duration} min</div><div class="lesson-title">${l.title}</div><div class="lesson-date">${formatDate(l.date)}</div></div><div class="lesson-rating">${stars(l.rating)}</div></div>
+    <div class="lesson-body">
+      <div class="lesson-topics">${(l.topics||[]).map(t=>`<span class="topic-chip">${t}</span>`).join('')}</div>
+      <div class="lesson-notes"><strong>Notes</strong>${l.notes||''}</div>
+      <div class="video-slot"><div class="video-placeholder"><div class="video-placeholder-icon">▶</div><div>No video attached</div></div></div>
+      <div style="display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <button class="btn-sm" onclick="event.stopPropagation();editLesson('${l.id}','${pupilId}')">Edit</button>
+        <button class="btn-sm-outline" style="color:var(--red);border-color:rgba(239,68,68,.3)" onclick="event.stopPropagation();deleteLesson('${l.id}','${pupilId}')">Delete</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function deleteLesson(lessonId, pupilId) {
+  if (!confirm('Delete this lesson? This cannot be undone.')) return;
+  await sb.from('lessons').delete().eq('id', lessonId);
+  showToast('Lesson deleted');
+  await openPupil(pupilId);
+}
+
+async function editLesson(lessonId, pupilId) {
+  const { data: l } = await sb.from('lessons').select('*').eq('id', lessonId).single();
+  if (!l) return;
+  // Switch to Add Lesson tab and pre-fill
+  const btn = document.querySelectorAll('.tab-btn')[2];
+  switchPupilTab(btn, 'tab-add');
+  document.getElementById('al-date').value = l.date;
+  document.getElementById('al-duration').value = l.duration;
+  document.getElementById('al-title').value = l.title;
+  document.getElementById('al-notes').value = l.notes || '';
+  addLessonRating = l.rating || 4;
+  document.querySelectorAll('.rating-star').forEach((s,i) => s.classList.toggle('active', i < addLessonRating));
+  // Check matching topics
+  document.querySelectorAll('#topic-grid input').forEach(inp => {
+    inp.checked = (l.topics||[]).includes(inp.value);
+    inp.closest('label').classList.toggle('checked', (l.topics||[]).includes(inp.value));
+  });
+  // Change save button to update mode
+  const saveBtn = document.querySelector('[onclick*="submitLesson"]');
+  if (saveBtn) {
+    saveBtn.textContent = 'Update Lesson';
+    saveBtn.setAttribute('onclick', `updateLesson('${lessonId}','${pupilId}')`);
+  }
+}
+
+async function updateLesson(lessonId, pupilId) {
+  const title = document.getElementById('al-title').value.trim();
+  const notes = document.getElementById('al-notes').value.trim();
+  const date  = document.getElementById('al-date').value;
+  const dur   = document.getElementById('al-duration').value;
+  const nextTopics = document.getElementById('al-next-topics').value.trim();
+  const nextDate   = document.getElementById('al-next-date').value.trim();
+  if (!title || !date) { showToast('Please fill in title and date'); return; }
+  const checked = [...document.querySelectorAll('#topic-grid input:checked')].map(i => i.value);
+  await sb.from('lessons').update({ date, duration: parseInt(dur), title, topics: checked, notes, rating: addLessonRating }).eq('id', lessonId);
+  if (nextTopics || nextDate) await sb.from('pupils').update({ next_lesson_topics: nextTopics||undefined, next_lesson_date: nextDate||undefined }).eq('id', pupilId);
+  showToast('Lesson updated');
+  await openPupil(pupilId);
+}
+
+function switchPupilTab(btn, tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['tab-lessons','tab-skills','tab-add','tab-msgs'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.toggle('hidden', id!==tabId); });
+}
+
+function setRating(n) { addLessonRating=n; document.querySelectorAll('.rating-star').forEach((s,i)=>s.classList.toggle('active',i<n)); }
+
+async function submitLesson(pupilId) {
+  const title = document.getElementById('al-title').value.trim();
+  const notes = document.getElementById('al-notes').value.trim();
+  const date = document.getElementById('al-date').value;
+  const dur = document.getElementById('al-duration').value;
+  const nextTopics = document.getElementById('al-next-topics').value.trim();
+  const nextDate = document.getElementById('al-next-date').value.trim();
+  const testDate = document.getElementById('al-test-date')?.value || null;
+  if (!title || !date) { showToast('Please fill in title and date'); return; }
+  const checked = [...document.querySelectorAll('#topic-grid input:checked')].map(i=>i.value);
+  const { count } = await sb.from('lessons').select('*',{count:'exact',head:true}).eq('pupil_id',pupilId);
+  const newNum = (count||0)+1;
+  await sb.from('lessons').insert({ pupil_id:pupilId, lesson_num:newNum, date, duration:parseInt(dur), title, topics:checked, notes, rating:addLessonRating });
+  const updates = {};
+  if (nextTopics) updates.next_lesson_topics = nextTopics;
+  if (nextDate) updates.next_lesson_date = nextDate;
+  if (testDate) updates.test_date = testDate;
+  if (Object.keys(updates).length > 0) await sb.from('pupils').update(updates).eq('id',pupilId);
+  showToast('Lesson saved!'); await openPupil(pupilId);
+}
+
+async function cycleSkill(pupilId, skill, btn, e) {
+  e.stopPropagation();
+  const statuses = ['not-started','in-progress','confident'];
+  const cur = btn.textContent.trim().replace(' ↻','');
+  const currentStatus = cur==='Confident'?'confident':cur==='In Progress'?'in-progress':'not-started';
+  const next = statuses[(statuses.indexOf(currentStatus)+1)%3];
+  await sb.from('skills').upsert({pupil_id:pupilId,skill_name:skill,status:next},{onConflict:'pupil_id,skill_name'});
+  btn.textContent = statusLabel(next)+' ↻';
+  btn.className = `skill-toggle ${skillToggleClass(next)}`;
+  btn.style.display = 'block';
+  showToast('Skill updated');
+}
+
+async function renderPupilsList(el, showArchived = false) {
+  const pupils = await fetchAllPupils(showArchived);
+  const activePupils = showArchived ? pupils.filter(p => p.archived) : pupils;
+  const { data: allBookings } = await sb.from('bookings').select('pupil_id').not('pupil_id', 'is', null);
+  const bookingCounts = {};
+  (allBookings||[]).forEach(b => { bookingCounts[b.pupil_id] = (bookingCounts[b.pupil_id]||0) + 1; });
+
+  el.innerHTML = `
+    <div class="page-header flex justify-between align-center" style="flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="page-title">My Pupils</div>
+        <div class="page-sub">${pupils.length} ${showArchived ? 'archived' : 'active'}</div>
+      </div>
+    </div>
+    <div class="tabs" style="margin-bottom:20px">
+      <button class="tab-btn ${!showArchived?'active':''}" onclick="renderPupilsList(document.getElementById('content-area'), false)">Active</button>
+      <button class="tab-btn ${showArchived?'active':''}" onclick="renderPupilsList(document.getElementById('content-area'), true)">Archived</button>
+    </div>
+    <div class="pupil-list">
+      ${pupils.length === 0 ? `<div class="card" style="text-align:center;padding:40px;color:var(--muted)">No ${showArchived?'archived':'active'} pupils.</div>` :
+      pupils.map(p => {
+        const conf = Object.values(p.skills).filter(s=>s==='confident').length;
+        const pct  = Math.round((conf/ALL_TOPICS.length)*100);
+        const bCount = bookingCounts[p.id] || 0;
+        return `
+          <div class="pupil-row">
+            <div class="pupil-info" onclick="openPupil('${p.id}')" style="flex:1;cursor:pointer">
+              <div class="pupil-avatar">${p.name.split(' ').map(n=>n[0]).join('')}</div>
+              <div>
+                <div class="pupil-name">${p.name}</div>
+                <div class="pupil-meta">${p.totalLessons} lessons logged · ${bCount} bookings · Next: ${p.nextLesson.date}</div>
+              </div>
+            </div>
+            <div class="pupil-stats">
+              <div class="pupil-stat"><div class="pupil-stat-val">${p.totalLessons}</div><div class="pupil-stat-label">Logged</div></div>
+              <div class="pupil-stat"><div class="pupil-stat-val">${bCount}</div><div class="pupil-stat-label">Booked</div></div>
+              <div class="pupil-stat"><div class="pupil-stat-val">${pct}%</div><div class="pupil-stat-label">Confident</div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-left:12px">
+              ${showArchived ? `
+                <button class="btn-sm-outline" style="font-size:.72rem;padding:5px 10px;white-space:nowrap" onclick="unarchivePupil('${p.id}')">Restore</button>
+                <button class="btn-sm-outline" style="font-size:.72rem;padding:5px 10px;color:var(--red);border-color:rgba(239,68,68,.3);white-space:nowrap" onclick="deletePupil('${p.id}','${p.name}')">Delete</button>
+              ` : `
+                <button class="btn-sm-outline" style="font-size:.72rem;padding:5px 10px;white-space:nowrap" onclick="archivePupil('${p.id}','${p.name}')">Archive</button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+async function archivePupil(id, name) {
+  if (!confirm(`Archive ${name}? They will be hidden from your active list but all their data is kept.`)) return;
+  await sb.from('pupils').update({ archived: true }).eq('id', id);
+  showToast(`${name} archived`);
+  await renderPupilsList(document.getElementById('content-area'), false);
+}
+
+async function unarchivePupil(id) {
+  await sb.from('pupils').update({ archived: false }).eq('id', id);
+  showToast('Pupil restored to active');
+  await renderPupilsList(document.getElementById('content-area'), true);
+}
+
+async function deletePupil(id, name) {
+  if (!confirm(`Permanently delete ${name}? This will remove ALL their lessons, skills, messages and bookings. This cannot be undone.`)) return;
+  if (!confirm(`Are you absolutely sure? This is permanent.`)) return;
+  // Delete in order to respect foreign keys
+  await sb.from('messages').delete().eq('pupil_id', id);
+  await sb.from('skills').delete().eq('pupil_id', id);
+  await sb.from('lessons').delete().eq('pupil_id', id);
+  await sb.from('bookings').update({ pupil_id: null }).eq('pupil_id', id);
+  await sb.from('profiles').delete().eq('pupil_id', id);
+  await sb.from('pupils').delete().eq('id', id);
+  showToast(`${name} permanently deleted`);
+  await renderPupilsList(document.getElementById('content-area'), true);
+}
+
+// ── NAV BOOK DROPDOWN ──
+function toggleNavBook() {
+  document.getElementById('book-nav-menu').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#book-nav-dropdown')) {
+    document.getElementById('book-nav-menu')?.classList.remove('open');
+  }
+});
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+async function checkUnreadMessages() {
+  try {
+    if (currentRole === 'instructor') {
+      const { data: msgs } = await sb.from('messages').select('id').eq('sender_role','pupil').limit(1);
+      if (msgs && msgs.length > 0) { const b = document.getElementById('msg-badge'); if(b) b.style.display='inline-flex'; }
+    } else {
+      const pupilId = selectedPupilId || currentProfile?.pupil_id;
+      if (!pupilId) return;
+      const { data: msgs } = await sb.from('messages').select('id').eq('pupil_id',pupilId).eq('sender_role','instructor').limit(1);
+      if (msgs && msgs.length > 0) { const b = document.getElementById('msg-badge'); if(b) b.style.display='inline-flex'; }
+    }
+  } catch(e) {}
+}
+
+// ── DIARY DAY VIEW ────────────────────────────────────────────────────────────
+async function showDayView(dateStr, bookings, lessons) {
+  const el = document.getElementById('content-area');
+  const date = new Date(dateStr);
+  const dayBookings = bookings.filter(b => new Date(b.start_time).toDateString() === date.toDateString());
+  const dayLabel = date.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  el.innerHTML = `
+    <div class="page-header flex justify-between align-center" style="flex-wrap:wrap;gap:12px">
+      <div>
+        <button class="btn-ghost" style="margin-bottom:12px" onclick="navigate('diary')">← Back to diary</button>
+        <div class="page-title">${dayLabel}</div>
+        <div class="page-sub">${dayBookings.length} lesson${dayBookings.length!==1?'s':''} scheduled</div>
+      </div>
+    </div>
+    ${dayBookings.length === 0
+      ? `<div class="card" style="text-align:center;padding:48px;color:var(--muted)">No lessons scheduled for this day.</div>`
+      : `<div style="display:flex;flex-direction:column;gap:12px">
+          ${dayBookings.map(b => {
+            const t = new Date(b.start_time).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+            const colour = b.lesson_type==='Saturday Lesson'?'var(--yellow)':b.lesson_type==='Test'?'var(--green)':'var(--blue)';
+            return `
+              <div class="card" style="border-left:3px solid ${colour}">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+                  <div>
+                    <div style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:4px">${b.invitee_name}</div>
+                    <div style="font-size:.85rem;color:var(--muted)">${b.invitee_email}</div>
+                  </div>
+                  <span style="font-size:.78rem;font-weight:600;color:${colour};background:${colour}18;padding:4px 12px;border-radius:100px;border:1px solid ${colour}33">${b.lesson_type}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px">
+                  <div><div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Time</div><div style="font-size:.95rem;font-weight:600;color:var(--text)">${t}</div></div>
+                  <div><div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Pickup</div><div style="font-size:.95rem;font-weight:600;color:var(--text)">${b.pickup_location||'Not specified'}</div></div>
+                  <div><div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Status</div><div style="font-size:.95rem;font-weight:600;color:${b.status==='cancelled'?'var(--red)':'var(--green)'};">${b.status==='cancelled'?'Cancelled':'Confirmed'}</div></div>
+                </div>
+                ${b.status !== 'cancelled' && b.status !== 'no-show' ? `
+                  <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+                    <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px">⚠️ Cancellations within 12 hours or no-shows are subject to a £40 fee.</div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                      ${b.pupil_id ? `<button class="btn-sm" onclick="openPupil('${b.pupil_id}')">View Profile</button>` : ''}
+                      <button class="btn-sm-outline" style="color:#f97316;border-color:rgba(249,115,22,.3)" onclick="markNoShow('${b.id}')">No Show (£40 fee)</button>
+                      <button class="btn-sm-outline" style="color:var(--red);border-color:rgba(239,68,68,.3)" onclick="cancelBooking('${b.id}')">Cancel Lesson</button>
+                    </div>
+                  </div>
+                ` : `<div style="margin-top:12px;font-size:.82rem;color:${b.status==='no-show'?'#f97316':'var(--red)'}">
+                  ${b.status==='no-show'?'⚠️ Pupil did not show — £40 fee applies.':'❌ This lesson has been cancelled.'}
+                </div>`}
+              </div>
+            `;
+          }).join('')}
+        </div>`
+    }
+  `;
+}
+
+async function cancelBooking(bookingId) {
+  if (!confirm('Cancel this lesson? The pupil will need to be notified separately.')) return;
+  await sb.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
+  showToast('Lesson cancelled');
+  navigate('diary');
+}
+
+async function markNoShow(bookingId) {
+  if (!confirm('Mark as no show? A £40 fee applies. The pupil will need to be contacted separately.')) return;
+  await sb.from('bookings').update({ status: 'no-show' }).eq('id', bookingId);
+  showToast('Marked as no show — £40 fee applies');
+  navigate('diary');
+}
+async function renderDiary(el) {
+  const { data: bookings } = await sb.from('bookings').select('*').order('start_time', { ascending: true });
+  // Also fetch all logged lessons to show in diary
+  const { data: allLessons } = await sb.from('lessons').select('*, pupils(name)').order('date', { ascending: true });
+
+  // Get current week start (Monday)
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  monday.setHours(0,0,0,0);
+
+  // Week navigation state
+  if (!window.diaryWeekOffset) window.diaryWeekOffset = 0;
+
+  const weekStart = new Date(monday);
+  weekStart.setDate(monday.getDate() + (window.diaryWeekOffset * 7));
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23,59,59,999);
+
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    days.push(d);
+  }
+
+  const weekLabel = `${weekStart.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} – ${weekEnd.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`;
+  const isCurrentWeek = window.diaryWeekOffset === 0;
+
+  // Filter bookings for this week (exclude cancelled)
+  const weekBookings = (bookings||[]).filter(b => {
+    const d = new Date(b.start_time);
+    return d >= weekStart && d <= weekEnd && b.status !== 'cancelled';
+  });
+
+  // Filter logged lessons for this week
+  const weekLessons = (allLessons||[]).filter(l => {
+    const d = new Date(l.date);
+    return d >= weekStart && d <= weekEnd;
+  });
+
+  el.innerHTML = `
+    <div class="page-header flex justify-between align-center" style="flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="page-title">Diary</div>
+        <div class="page-sub">${weekLabel}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-ghost" onclick="changeDiaryWeek(-1)">← Prev</button>
+        ${!isCurrentWeek ? `<button class="btn-ghost" onclick="changeDiaryWeek(0)">Today</button>` : ''}
+        <button class="btn-ghost" onclick="changeDiaryWeek(1)">Next →</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px">
+      ${days.map(day => {
+        const dayStr = day.toLocaleDateString('en-GB',{weekday:'short'});
+        const dayNum = day.getDate();
+        const isToday = day.toDateString() === new Date().toDateString();
+        const dayBookings = weekBookings.filter(b => new Date(b.start_time).toDateString() === day.toDateString());
+        const dayLessons  = weekLessons.filter(l => new Date(l.date).toDateString() === day.toDateString());
+        const hasAnything = dayBookings.length > 0 || dayLessons.length > 0;
+
+        return `
+          <div style="background:var(--bg2);border:1px solid ${isToday?'var(--blue)':'var(--border)'};border-radius:10px;padding:12px;min-height:120px;cursor:pointer;transition:border-color .2s" onclick="showDayView('${day.toISOString()}', ${JSON.stringify(weekBookings).replace(/'/g, "\\'")}, ${JSON.stringify(weekLessons).replace(/'/g, "\\'")})">
+            <div style="font-size:.72rem;font-weight:600;color:${isToday?'var(--blue)':'var(--muted)'};text-transform:uppercase;letter-spacing:.06em">${dayStr}</div>
+            <div style="font-size:1.3rem;font-weight:700;color:${isToday?'var(--blue)':'var(--text)'};margin-bottom:8px">${dayNum}</div>
+            ${!hasAnything
+              ? `<div style="font-size:.72rem;color:var(--muted2)">No lessons</div>`
+              : `${dayBookings.map(b => {
+                  const t = new Date(b.start_time).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+                  const colour = b.lesson_type==='Saturday Lesson'?'var(--yellow)':b.lesson_type==='Test'?'var(--green)':'var(--blue)';
+                  return `<div style="background:${colour}18;border-left:3px solid ${colour};border-radius:4px;padding:6px 8px;margin-bottom:4px">
+                    <div style="font-size:.72rem;font-weight:600;color:${colour}">${t} · Booked</div>
+                    <div style="font-size:.75rem;color:var(--text)">${b.invitee_name}</div>
+                  </div>`;
+                }).join('')}
+                ${dayLessons.map(l => {
+                  return `<div style="background:rgba(139,92,246,.1);border-left:3px solid #a78bfa;border-radius:4px;padding:6px 8px;margin-bottom:4px">
+                    <div style="font-size:.72rem;font-weight:600;color:#a78bfa">Logged</div>
+                    <div style="font-size:.75rem;color:var(--text)">${l.pupils?.name||'Unknown'} — ${l.title}</div>
+                  </div>`;
+                }).join('')}`
+            }
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    ${(weekBookings.length > 0 || weekLessons.length > 0) ? `
+      <div style="margin-top:20px">
+        <div class="card-title" style="margin-bottom:12px">This week — ${weekBookings.length} booked · ${weekLessons.length} logged</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${weekBookings.map(b => bookingCard(b)).join('')}
+          ${weekLessons.map(l => `<div class="card-sm" style="border-left:3px solid #a78bfa"><div style="display:flex;justify-content:space-between"><div><div style="font-size:.88rem;font-weight:600;color:var(--text)">${l.pupils?.name||'Unknown'} — Lesson ${l.lesson_num}</div><div style="font-size:.78rem;color:var(--muted);margin-top:2px">${formatDate(l.date)} · ${l.duration} min · ${l.title}</div></div><div style="font-size:.78rem;color:#a78bfa;font-weight:600">Logged</div></div></div>`).join('')}
+        </div>
+      </div>
+    ` : ''}
+  `;
+}
+
+function changeDiaryWeek(offset) {
+  if (offset === 0) window.diaryWeekOffset = 0;
+  else window.diaryWeekOffset = (window.diaryWeekOffset||0) + offset;
+  navigate('diary');
+}
+
+// ── FINANCES ──────────────────────────────────────────────────────────────────
+async function renderFinances(el) {
+  const { data: expenses } = await sb.from('expenses').select('*').order('date', { ascending: false });
+  const list = expenses || [];
+
+  const now = new Date();
+  const thisMonth = list.filter(e => {
+    const d = new Date(e.date);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  const thisYear = list.filter(e => new Date(e.date).getFullYear() === now.getFullYear());
+  const monthTotal = thisMonth.reduce((a,e) => a + parseFloat(e.amount), 0);
+  const yearTotal  = thisYear.reduce((a,e) => a + parseFloat(e.amount), 0);
+
+  const categories = ['Fuel','Maintenance','Tyres','Insurance','Subscriptions','Phone','Other'];
+
+  el.innerHTML = `
+    <div class="page-header">
+      <div class="page-title">Finances</div>
+      <div class="page-sub">Business expenditure tracker</div>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:24px">
+      <div class="stat-card">
+        <div class="stat-val">£${monthTotal.toFixed(2)}</div>
+        <div class="stat-label">Spent this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">£${yearTotal.toFixed(2)}</div>
+        <div class="stat-label">Spent this year</div>
+      </div>
+    </div>
+
+    <div class="add-lesson-form" style="margin-bottom:24px">
+      <div style="font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:16px">Log an expense</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input class="form-input" type="date" id="exp-date" value="${now.toISOString().split('T')[0]}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (£)</label>
+          <input class="form-input" type="number" id="exp-amount" placeholder="0.00" step="0.01" min="0"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-input" id="exp-category">
+            ${categories.map(c=>`<option>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <input class="form-input" type="text" id="exp-notes" placeholder="e.g. Full tank, Halfords"/>
+        </div>
+      </div>
+      <button class="btn-sm" onclick="addExpense()">Add Expense</button>
+    </div>
+
+    ${categories.map(cat => {
+      const catItems = list.filter(e => e.category === cat);
+      if (catItems.length === 0) return '';
+      const catTotal = catItems.reduce((a,e) => a + parseFloat(e.amount), 0);
+      return `
+        <div style="margin-bottom:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="card-title">${cat}</div>
+            <div style="font-size:.88rem;font-weight:600;color:var(--text)">£${catTotal.toFixed(2)}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${catItems.slice(0,5).map(e=>`
+              <div class="card-sm" style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-size:.88rem;color:var(--text)">${e.notes||e.category}</div>
+                  <div style="font-size:.76rem;color:var(--muted)">${formatDate(e.date)}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div style="font-size:.95rem;font-weight:600;color:var(--text)">£${parseFloat(e.amount).toFixed(2)}</div>
+                  <button onclick="deleteExpense('${e.id}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#fca5a5;font-size:.72rem;padding:3px 8px;border-radius:5px;cursor:pointer;font-family:var(--sans)">✕</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }).join('')}
+
+    ${list.length === 0 ? `<div class="card" style="text-align:center;padding:40px;color:var(--muted)">No expenses logged yet.</div>` : ''}
+  `;
+}
+
+async function addExpense() {
+  const date     = document.getElementById('exp-date').value;
+  const amount   = document.getElementById('exp-amount').value;
+  const category = document.getElementById('exp-category').value;
+  const notes    = document.getElementById('exp-notes').value.trim();
+  if (!date || !amount) { showToast('Please fill in date and amount'); return; }
+  await sb.from('expenses').insert({ date, amount: parseFloat(amount), category, notes });
+  showToast('Expense added');
+  navigate('finances');
+}
+
+async function deleteExpense(id) {
+  await sb.from('expenses').delete().eq('id', id);
+  showToast('Expense removed');
+  navigate('finances');
+}
+
+function skillToggleClass(status) {
+  return status==='confident'?'skill-toggle-co':status==='in-progress'?'skill-toggle-ip':'skill-toggle-ns';
+}
+function copyShareLink() {
+  const input = document.getElementById('share-link');
+  navigator.clipboard.writeText(input.value).then(() => showToast('Link copied!')).catch(() => {
+    input.select(); document.execCommand('copy'); showToast('Link copied!');
+  });
+}
+
+function stars(n) { return [1,2,3,4,5].map(i=>`<span class="star${i<=n?' filled':''}">★</span>`).join(''); }
+function statusLabel(s) { return s==='confident'?'Confident':s==='in-progress'?'In Progress':'Not Started'; }
+function formatDate(d) { return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}); }
+function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+document.getElementById('login-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>
