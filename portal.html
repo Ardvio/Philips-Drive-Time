@@ -146,7 +146,7 @@ body{
   transition:background .15s,color .15s;
 }
 .login-tab.active{
-  background:var(--blue);
+  background:var(--red);
   color:#fff;
 }
 .form-group{margin-bottom:16px}
@@ -2904,6 +2904,26 @@ async function renderTimeOff(el) {
       </div>
     </div>
 
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title" style="margin-bottom:4px">Block a Period</div>
+      <div style="font-size:.8rem;color:var(--muted);margin-bottom:16px">Block a range of dates in one go — useful for holidays or time off</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <div class="form-group" style="margin-bottom:0;flex:1;min-width:130px">
+          <label class="form-label">From</label>
+          <input type="date" id="block-from" class="form-input" min="${new Date().toISOString().split('T')[0]}"/>
+        </div>
+        <div class="form-group" style="margin-bottom:0;flex:1;min-width:130px">
+          <label class="form-label">To</label>
+          <input type="date" id="block-to" class="form-input" min="${new Date().toISOString().split('T')[0]}"/>
+        </div>
+        <div class="form-group" style="margin-bottom:0;flex:2;min-width:150px">
+          <label class="form-label">Reason (optional)</label>
+          <input type="text" id="block-period-reason" class="form-input" placeholder="e.g. Summer holiday"/>
+        </div>
+        <button class="btn-sm" onclick="addBlockedPeriod()" style="flex-shrink:0">Block Period</button>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-title" style="margin-bottom:16px">Blocked Dates</div>
       ${(blocked||[]).length === 0
@@ -2936,6 +2956,35 @@ async function addBlockedDate() {
   if (!date) { showToast('Please select a date'); return; }
   await sb.from('blocked_dates').insert({ date, reason: reason || null });
   showToast('Date blocked');
+  await renderTimeOff(document.getElementById('content-area'));
+}
+
+async function addBlockedPeriod() {
+  const from = document.getElementById('block-from').value;
+  const to = document.getElementById('block-to').value;
+  const reason = document.getElementById('block-period-reason').value.trim();
+  if (!from || !to) { showToast('Please select both a from and to date'); return; }
+  if (to < from) { showToast('End date must be after start date'); return; }
+
+  // Build array of all dates in range
+  const dates = [];
+  const cur = new Date(from + 'T12:00:00');
+  const end = new Date(to + 'T12:00:00');
+  while (cur <= end) {
+    const y = cur.getFullYear();
+    const m = String(cur.getMonth()+1).padStart(2,'0');
+    const d = String(cur.getDate()).padStart(2,'0');
+    dates.push({ date: `${y}-${m}-${d}`, reason: reason || null });
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  if (dates.length > 60) { showToast('Maximum 60 days at once'); return; }
+
+  const btn = document.querySelector('[onclick="addBlockedPeriod()"]');
+  btn.textContent = 'Blocking...'; btn.disabled = true;
+  await sb.from('blocked_dates').insert(dates);
+  btn.textContent = 'Block Period'; btn.disabled = false;
+  showToast(`${dates.length} day${dates.length > 1 ? 's' : ''} blocked`);
   await renderTimeOff(document.getElementById('content-area'));
 }
 

@@ -4,41 +4,61 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Philip's Drive Time — Progress</title>
-<meta name="theme-color" content="#060a14"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<meta name="theme-color" content="#0d0d0d"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#060a14;--bg2:#0a1424;--bg3:#0f1e38;
-  --text:#f0f4ff;--muted:rgba(240,244,255,.5);--muted2:rgba(240,244,255,.25);
-  --blue:#1a6bff;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444;
-  --border:rgba(255,255,255,.08);--radius:12px;--sans:'DM Sans',sans-serif;
+  --bg:#0d0d0d;--bg2:#141414;--bg3:#1a1a1a;
+  --text:#f5f5f5;--muted:rgba(245,245,245,.45);--muted2:rgba(245,245,245,.2);
+  --red:#e01c1c;--green:#22c55e;--yellow:#f59e0b;
+  --border:rgba(255,255,255,.07);--radius:12px;--sans:'Outfit',sans-serif;
 }
-body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:24px}
-.header{text-align:center;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--border)}
-.logo{font-size:1.1rem;font-weight:700;margin-bottom:4px}
-.logo span{color:var(--blue)}
-.pupil-name{font-size:1.8rem;font-weight:700;margin-top:12px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
-.stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
-.stat-val{font-size:1.6rem;font-weight:700;color:var(--text)}
-.stat-label{font-size:.75rem;color:var(--muted);margin-top:4px}
-.progress-bar{height:6px;background:var(--bg3);border-radius:100px;overflow:hidden;margin:16px 0}
-.progress-fill{height:100%;background:var(--blue);border-radius:100px;transition:width .5s}
-.cat-heading{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin:20px 0 8px;padding-bottom:8px;border-bottom:1px solid var(--border)}
-.skill-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
-.skill-name{font-size:.85rem;color:var(--text)}
-.badge{font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:100px;text-transform:uppercase}
-.badge.not-started{background:rgba(239,68,68,.12);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}
-.badge.in-progress{background:rgba(245,158,11,.12);color:var(--yellow);border:1px solid rgba(245,158,11,.2)}
-.badge.confident{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.2)}
-.footer{text-align:center;margin-top:32px;font-size:.78rem;color:var(--muted2)}
-.footer a{color:var(--blue);text-decoration:none}
-.loading{text-align:center;padding:60px;color:var(--muted)}
-.error{text-align:center;padding:60px;color:#fca5a5}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:0}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  background:var(--bg);position:sticky;top:0;z-index:10;
+}
+.logo-text{font-size:1rem;font-weight:700;letter-spacing:-.01em}
+.logo-text span{color:var(--red)}
+.back-link{
+  font-size:.8rem;font-weight:600;color:var(--muted);
+  text-decoration:none;display:flex;align-items:center;gap:5px;
+  transition:color .15s;
+}
+.back-link:hover{color:var(--text)}
+.container{max-width:680px;margin:0 auto;padding:28px 20px 60px}
+.header{text-align:center;margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid var(--border)}
+.pupil-name{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.start-date{font-size:.84rem;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 12px;text-align:center}
+.stat-val{font-size:1.7rem;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.stat-label{font-size:.7rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.progress-bar{height:5px;background:var(--bg3);border-radius:100px;overflow:hidden;margin-bottom:28px}
+.progress-fill{height:100%;background:var(--red);border-radius:100px;transition:width .6s ease}
+.cat-heading{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin:22px 0 8px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.skill-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);gap:12px}
+.skill-name{font-size:.85rem;color:var(--text);line-height:1.4}
+.badge{font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:100px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;flex-shrink:0}
+.badge.not-started{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border)}
+.badge.in-progress{background:rgba(245,158,11,.12);color:var(--yellow);border:1px solid rgba(245,158,11,.25)}
+.badge.confident{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.footer{text-align:center;margin-top:36px;font-size:.78rem;color:var(--muted2);line-height:1.8}
+.footer a{color:var(--red);text-decoration:none}
+.loading{text-align:center;padding:80px 20px;color:var(--muted);font-size:.9rem}
+.error-msg{text-align:center;padding:80px 20px;color:var(--red);font-size:.9rem}
 </style>
 </head>
 <body>
+
+<div class="topbar">
+  <a class="back-link" href="https://ardvio.github.io/Philips-Drive-Time/">&#8592; Back to site</a>
+  <div class="logo-text">Philip's <span>Drive Time</span></div>
+  <div style="width:80px"></div>
+</div>
+
 <div id="app"><div class="loading">Loading progress...</div></div>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -65,49 +85,62 @@ const ALL_TOPICS = NI_SYLLABUS.flatMap(s => s.skills);
 async function load() {
   const params = new URLSearchParams(window.location.search);
   const pupilId = params.get('pupil');
-  if (!pupilId) { document.getElementById('app').innerHTML = '<div class="error">Invalid link.</div>'; return; }
+  if (!pupilId) { document.getElementById('app').innerHTML = '<div class="error-msg">Invalid link.</div>'; return; }
 
   const { data: pupil } = await sb.from('pupils').select('*').eq('id', pupilId).single();
   const { data: lessons } = await sb.from('lessons').select('*').eq('pupil_id', pupilId);
   const { data: skillRows } = await sb.from('skills').select('*').eq('pupil_id', pupilId);
 
-  if (!pupil) { document.getElementById('app').innerHTML = '<div class="error">Pupil not found.</div>'; return; }
+  if (!pupil) { document.getElementById('app').innerHTML = '<div class="error-msg">Pupil not found.</div>'; return; }
 
   const skills = {};
   (skillRows||[]).forEach(s => { skills[s.skill_name] = s.status; });
 
   const confident = Object.values(skills).filter(s=>s==='confident').length;
-  const inProg = Object.values(skills).filter(s=>s==='in-progress').length;
   const total = ALL_TOPICS.length;
   const pct = Math.round((confident/total)*100);
 
+  const startDate = pupil.start_date
+    ? new Date(pupil.start_date + 'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})
+    : '';
+
   document.getElementById('app').innerHTML = `
-    <div class="header">
-      <div class="logo">Philip's <span>Drive Time</span></div>
-      <div class="pupil-name">${pupil.name}</div>
-      <div style="font-size:.84rem;color:var(--muted);margin-top:4px">Started ${new Date(pupil.start_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</div>
-    </div>
+    <div class="container">
+      <div class="header">
+        <div class="pupil-name">${pupil.name}</div>
+        ${startDate ? `<div class="start-date">Started ${startDate}</div>` : ''}
+      </div>
 
-    <div class="stats">
-      <div class="stat"><div class="stat-val">${(lessons||[]).length}</div><div class="stat-label">Lessons completed</div></div>
-      <div class="stat"><div class="stat-val">${confident}</div><div class="stat-label">Skills confident</div></div>
-      <div class="stat"><div class="stat-val">${pct}%</div><div class="stat-label">Overall readiness</div></div>
-    </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-val">${(lessons||[]).length}</div>
+          <div class="stat-label">Lessons</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">${confident}</div>
+          <div class="stat-label">Confident</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">${pct}%</div>
+          <div class="stat-label">Readiness</div>
+        </div>
+      </div>
 
-    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
 
-    ${NI_SYLLABUS.map(cat => `
-      <div class="cat-heading">${cat.category}</div>
-      ${cat.skills.map(skill => {
-        const status = skills[skill] || 'not-started';
-        const label = status==='confident'?'Confident':status==='in-progress'?'In Progress':'Not Started';
-        return `<div class="skill-row"><div class="skill-name">${skill}</div><span class="badge ${status}">${label}</span></div>`;
-      }).join('')}
-    `).join('')}
+      ${NI_SYLLABUS.map(cat => `
+        <div class="cat-heading">${cat.category}</div>
+        ${cat.skills.map(skill => {
+          const status = skills[skill] || 'not-started';
+          const label = status==='confident'?'Confident':status==='in-progress'?'In Progress':'Not Started';
+          return '<div class="skill-row"><div class="skill-name">' + skill + '</div><span class="badge ' + status + '">' + label + '</span></div>';
+        }).join('')}
+      `).join('')}
 
-    <div class="footer">
-      Read-only progress view · <a href="https://sparkling-blini-33cc58.netlify.app">Philip's Drive Time</a>
-      <div style="margin-top:8px">Powered by <a href="https://ardvio.com">Ardvio</a></div>
+      <div class="footer">
+        Read-only progress view<br>
+        Powered by <a href="https://ardvio.com" target="_blank">Ardvio</a>
+      </div>
     </div>
   `;
 }
