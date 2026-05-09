@@ -1888,17 +1888,16 @@ async function renderBookingDates() {
 
   const blockedSet = new Set((blocked||[]).map(b => b.date));
 
-  // Build week
+  // Build week — use local date arithmetic to avoid timezone shifts
   const today = new Date(); today.setHours(0,0,0,0);
-  const monday = new Date(today);
-  const dow = today.getDay();
-  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-  const weekStart = new Date(monday);
-  weekStart.setDate(monday.getDate() + weekOffset * 7);
+  const dow = today.getDay(); // 0=Sun
+  const daysFromMonday = dow === 0 ? 6 : dow - 1;
+  const mondayOffset = today.getDate() - daysFromMonday + (weekOffset * 7);
+  const weekStart = new Date(today.getFullYear(), today.getMonth(), mondayOffset);
 
-  document.getElementById('week-label').textContent =
-    weekStart.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' – ' +
-    new Date(weekStart.getTime() + 6*86400000).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  const weekStartLabel = weekStart.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  const weekEndLabel = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate()+6).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  document.getElementById('week-label').textContent = weekStartLabel + ' – ' + weekEndLabel;
 
   document.getElementById('prev-week-btn').style.opacity = weekOffset <= 0 ? '.3' : '1';
   document.getElementById('prev-week-btn').disabled = weekOffset <= 0;
@@ -1908,15 +1907,22 @@ async function renderBookingDates() {
   const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   let html = '';
   for (let i = 0; i < 7; i++) {
-    const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
-    const dayNum = d.getDay(); // 0=Sun
-    const dateStr = d.toISOString().split('T')[0];
+    const d = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i);
+    const dayNum = d.getDay(); // 0=Sun, 6=Sat
+    // Build dateStr in local time (YYYY-MM-DD)
+    const dateStr = d.getFullYear() + '-' +
+      String(d.getMonth()+1).padStart(2,'0') + '-' +
+      String(d.getDate()).padStart(2,'0');
     const isPast = d < today;
     const isBlocked = blockedSet.has(dateStr);
     const dayAvail = (avail||[]).find(a => a.day_of_week === (dayNum === 0 ? 7 : dayNum));
 
-    // For Saturday lesson type, only Saturdays are selectable
-    const wrongDay = isSaturday ? dayNum !== 6 : dayNum === 0;
+    // Standard: Mon–Fri only. Saturday lesson: Sat only. Test: Mon–Sat.
+    let wrongDay = false;
+    if (lessonType === 'Saturday Lesson') wrongDay = dayNum !== 6;
+    else if (lessonType === 'Standard Lesson') wrongDay = dayNum === 0 || dayNum === 6;
+    else wrongDay = dayNum === 0; // Test — weekdays + Sat
+
     const isDisabled = isPast || isBlocked || !dayAvail || wrongDay;
     const isSelected = window._bookingState.date === dateStr;
 
@@ -1925,7 +1931,8 @@ async function renderBookingDates() {
       background:${isSelected ? 'rgba(224,28,28,.12)' : isDisabled ? 'var(--bg3)' : 'var(--bg2)'};
       color:${isDisabled ? 'var(--muted2)' : isSelected ? 'var(--red)' : 'var(--text)'};
       cursor:${isDisabled ? 'not-allowed' : 'pointer'};font-family:var(--sans);
-      display:flex;flex-direction:column;align-items:center;gap:2px;transition:.15s;width:100%">
+      display:flex;flex-direction:column;align-items:center;gap:2px;transition:.15s;width:100%;
+      opacity:${isDisabled && !isPast ? '.45' : '1'}">
       <span style="font-size:.62rem;font-weight:600;text-transform:uppercase">${days[i]}</span>
       <span style="font-size:.95rem;font-weight:700">${d.getDate()}</span>
     </button>`;
