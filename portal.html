@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Philip's Drive Time — Learner Portal</title>
 <meta name="description" content="Philip's Drive Time learner portal — track your lessons, skills and progress."/>
-<meta name="theme-color" content="#060a14"/>
+<meta name="theme-color" content="#0d0d0d"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Drive Time"/>
@@ -13,27 +13,29 @@
 <link rel="apple-touch-icon" href="icon-192.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
 /* ── RESET & TOKENS ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 :root{
-  --bg:       #060a14;
-  --bg2:      #0a1020;
-  --bg3:      #0e1628;
-  --blue:     #1a6bff;
-  --blue2:    #0f52d9;
-  --blue-dim: rgba(26,107,255,0.12);
-  --border:   rgba(26,107,255,0.14);
-  --border2:  rgba(255,255,255,0.07);
-  --text:     #f0f4ff;
-  --muted:    rgba(240,244,255,0.45);
-  --muted2:   rgba(240,244,255,0.25);
+  --bg:       #0d0d0d;
+  --bg2:      #161616;
+  --bg3:      #1f1f1f;
+  --red:      #e01c1c;
+  --red2:     #b81515;
+  --red-dim:  rgba(224,28,28,0.12);
+  --blue:     #e01c1c;
+  --blue2:    #b81515;
+  --blue-dim: rgba(224,28,28,0.12);
+  --border:   rgba(255,255,255,0.08);
+  --border2:  rgba(255,255,255,0.06);
+  --text:     rgba(255,255,255,0.92);
+  --muted:    rgba(255,255,255,0.45);
+  --muted2:   rgba(255,255,255,0.22);
   --green:    #22c55e;
   --yellow:   #f59e0b;
-  --red:      #ef4444;
-  --sans:     'DM Sans', sans-serif;
+  --sans:     'Outfit', sans-serif;
   --radius:   12px;
 }
 body{
@@ -220,7 +222,7 @@ body{
   position:sticky;
   top:0;
   z-index:50;
-  background:rgba(6,10,20,.85);
+  background:rgba(13,13,13,0.92);
   backdrop-filter:blur(20px);
   -webkit-backdrop-filter:blur(20px);
   border-bottom:1px solid var(--border);
@@ -334,7 +336,7 @@ body{
 .content{
   flex:1;
   overflow-y:auto;
-  padding:32px 36px;
+  padding:24px 20px 80px;
 }
 
 /* ── PAGE HEADER ── */
@@ -375,7 +377,7 @@ body{
 /* ── STATS GRID ── */
 .stats-grid{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(3,1fr);
   gap:14px;
   margin-bottom:24px;
 }
@@ -813,14 +815,21 @@ select.form-input option{background:var(--bg2)}
 .next-lesson-book:hover{background:rgba(255,255,255,.25)}
 
 /* ── RESPONSIVE ── */
-@media(max-width:768px){
-  .sidebar{display:none}
-  .content{padding:20px}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
+@media(max-width:767px){
+  .sidebar{display:none!important}
+  .content{padding:16px 16px 80px}
+  .stats-grid{grid-template-columns:repeat(3,1fr);gap:8px}
   .form-row{grid-template-columns:1fr}
   .topic-select-grid{grid-template-columns:1fr}
   .topnav{padding:0 16px}
   .pupil-stats{display:none}
+  .page-title{font-size:1.3rem}
+  .bottom-nav{display:block!important}
+}
+@media(min-width:768px){
+  .bottom-nav{display:none!important}
+  .sidebar{display:flex!important}
+  .content{padding:32px 36px}
 }
 
 /* ── TABS ── */
@@ -845,12 +854,12 @@ select.form-input option{background:var(--bg2)}
   cursor:pointer;
   transition:background .15s,color .15s;
 }
-.tab-btn.active{background:var(--blue);color:#fff}
+.tab-btn.active{background:var(--red);color:#fff}
 
 /* ── SUCCESS TOAST ── */
 .toast{
   position:fixed;
-  bottom:24px;right:24px;
+  bottom:80px;right:24px;
   background:var(--bg2);
   border:1px solid rgba(34,197,94,.3);
   color:var(--green);
@@ -1070,35 +1079,17 @@ select.form-input option{background:var(--bg2)}
   <!-- TOPNAV -->
   <nav class="topnav">
     <div class="nav-brand">
-      <div class="logo-dot" style="width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0"></div>
+      <div class="logo-dot" style="width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0"></div>
       Philip's <span>Drive Time</span>
-      <span class="nav-badge" id="role-badge">Pupil</span>
     </div>
     <div class="nav-right-actions">
-      <div class="book-dropdown-nav" id="book-nav-dropdown">
-        <button class="btn-ghost" onclick="toggleNavBook()">Book a Lesson ▾</button>
-        <div class="book-nav-menu" id="book-nav-menu">
-          <a href="https://calendly.com/pa55pgh/30min" target="_blank" class="book-nav-option">
-            <div style="font-size:.85rem;font-weight:600;color:var(--text)">Standard Lesson</div>
-            <div style="font-size:.75rem;color:var(--muted)">1 hour · Mon–Fri</div>
-          </a>
-          <a href="https://calendly.com/pa55pgh/saturday-1-hour-lesson" target="_blank" class="book-nav-option">
-            <div style="font-size:.85rem;font-weight:600;color:var(--text)">Saturday Lesson</div>
-            <div style="font-size:.75rem;color:var(--muted)">1 hour · Saturday</div>
-          </a>
-          <a href="https://calendly.com/pa55pgh/test-2-hours" target="_blank" class="book-nav-option">
-            <div style="font-size:.85rem;font-weight:600;color:var(--text)">Test</div>
-            <div style="font-size:.75rem;color:var(--muted)">2 hours · Any day</div>
-          </a>
-        </div>
-      </div>
       <div class="nav-avatar" id="user-avatar">P</div>
       <button class="btn-ghost" onclick="logout()">Sign out</button>
     </div>
   </nav>
 
   <div class="app-body">
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR — desktop only -->
     <aside class="sidebar" id="sidebar">
       <!-- populated by JS -->
     </aside>
@@ -1108,6 +1099,14 @@ select.form-input option{background:var(--bg2)}
       <!-- populated by JS -->
     </main>
   </div>
+
+  <!-- BOTTOM NAV — mobile only -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <div class="bottom-nav-inner" id="bottom-nav-inner">
+      <!-- populated by JS -->
+    </div>
+  </nav>
+
 </div>
 
 <!-- ── REGISTRATION CONFIRMATION ── -->
@@ -1359,13 +1358,27 @@ function bootApp() {
   document.getElementById('register-screen').style.display = 'none';
   const app = document.getElementById('app');
   app.style.display = 'flex';
-  document.getElementById('role-badge').textContent = currentRole === 'instructor' ? 'Instructor' : currentRole === 'parent' ? 'Parent' : 'Pupil';
   document.getElementById('user-avatar').textContent = (currentProfile?.name || 'U').split(' ').map(n=>n[0]).join('');
   renderSidebar(); navigate('dashboard');
 }
 
 function renderSidebar() {
-  const items = currentRole === 'instructor'
+  const instructorItems = [
+    {id:'dashboard', icon:'⬡',  label:'Home',     bnIcon:'🏠'},
+    {id:'diary',     icon:'📆', label:'Diary',    bnIcon:'📆'},
+    {id:'pupils',    icon:'👥', label:'Pupils',   bnIcon:'👥'},
+    {id:'bookings',  icon:'📅', label:'Bookings', bnIcon:'📅'},
+    {id:'finances',  icon:'💰', label:'More',     bnIcon:'⋯'},
+  ];
+  const pupilItems = [
+    {id:'dashboard', icon:'⬡',  label:'Home',     bnIcon:'🏠'},
+    {id:'bookings',  icon:'📅', label:'Bookings', bnIcon:'📅'},
+    {id:'syllabus',  icon:'✓',  label:'Skills',   bnIcon:'✓'},
+    {id:'messages',  icon:'💬', label:'Messages', bnIcon:'💬'},
+    {id:'profile',   icon:'👤', label:'Profile',  bnIcon:'👤'},
+  ];
+
+  const sidebarGroups = currentRole === 'instructor'
     ? [{ label:'Main', items:[
         {id:'dashboard', icon:'⬡', label:'Dashboard'},
         {id:'diary',     icon:'📆', label:'Diary'},
@@ -1382,16 +1395,50 @@ function renderSidebar() {
         {id:'messages',  icon:'💬', label:'Messages'},
         {id:'profile',   icon:'👤', label:'My Profile'},
       ]}];
-  document.getElementById('sidebar').innerHTML = items.map(g => `<div class="sidebar-label">${g.label}</div>${g.items.map(i => `<button class="nav-item${i.id===currentView?' active':''}" onclick="navigate('${i.id}')"><span class="nav-icon">${i.icon}</span>${i.label}${i.id==='messages'?'<span class="msg-badge" id="msg-badge" style="display:none">!</span>':''}</button>`).join('')}`).join('');
-  // Check for unread messages
+
+  // Sidebar (desktop)
+  document.getElementById('sidebar').innerHTML = sidebarGroups.map(g =>
+    `<div class="sidebar-label">${g.label}</div>${g.items.map(i =>
+      `<button class="nav-item${i.id===currentView?' active':''}" onclick="navigate('${i.id}')">
+        <span class="nav-icon">${i.icon}</span>${i.label}
+        ${i.id==='messages'?'<span class="msg-badge" id="msg-badge" style="display:none">!</span>':''}
+      </button>`
+    ).join('')}`
+  ).join('');
+
+  // Bottom nav (mobile)
+  const bnItems = currentRole === 'instructor' ? instructorItems : pupilItems;
+  document.getElementById('bottom-nav-inner').innerHTML = bnItems.map(i =>
+    `<button class="bn-item${i.id===currentView?' active':''}" onclick="navigate('${i.id}')">
+      <span class="bn-badge${i.id==='messages'?' show':''}" id="bn-msg-badge-${i.id}"></span>
+      <span class="bn-icon">${i.bnIcon}</span>
+      <span class="bn-label">${i.label}</span>
+    </button>`
+  ).join('');
+
+  // Show bottom nav on mobile
+  const isMobile = window.innerWidth < 768;
+  document.getElementById('bottom-nav').style.display = isMobile ? 'block' : 'none';
+  document.getElementById('sidebar').style.display = isMobile ? 'none' : 'flex';
+
   checkUnreadMessages();
 }
+
+// Recheck nav on resize
+window.addEventListener('resize', () => {
+  const isMobile = window.innerWidth < 768;
+  const bn = document.getElementById('bottom-nav');
+  const sb = document.getElementById('sidebar');
+  if (bn) bn.style.display = isMobile ? 'block' : 'none';
+  if (sb) sb.style.display = isMobile ? 'none' : 'flex';
+});
 
 async function navigate(view) {
   currentView = view; renderSidebar();
   if (view === 'messages') {
     const badge = document.getElementById('msg-badge');
     if (badge) badge.style.display = 'none';
+    document.querySelectorAll('[id^="bn-msg-badge-messages"]').forEach(b => b.classList.remove('show'));
   }
   const content = document.getElementById('content-area');
   content.innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;font-size:.9rem">Loading...</div>';
