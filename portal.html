@@ -1157,7 +1157,7 @@ select.form-input option{background:var(--bg2)}
     <p class="login-sub">Your account has been created successfully.</p>
     <div style="background:rgba(26,107,255,0.1);border:1px solid rgba(26,107,255,0.25);border-radius:10px;padding:16px 20px;margin:20px 0;text-align:left">
       <div style="font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Important</div>
-      <p style="font-size:.88rem;color:var(--text);line-height:1.6;margin:0">When booking a lesson on Calendly, always use this email address so your bookings link to your portal automatically:</p>
+      <p style="font-size:.88rem;color:var(--text);line-height:1.6;margin:0">This is your portal login email address. Keep it handy:</p>
       <div style="font-size:1rem;font-weight:700;color:var(--blue);margin-top:10px;word-break:break-all" id="conf-email"></div>
     </div>
     <button class="btn-primary" id="conf-proceed" style="width:100%">Go to my dashboard →</button>
@@ -1492,6 +1492,7 @@ function renderSidebar() {
         {id:'bookings',  icon:'📅', label:'Bookings'},
         {id:'pupils',    icon:'👥', label:'My Pupils'},
         {id:'messages',  icon:'💬', label:'Messages'},
+        {id:'timeoff',   icon:'🗓', label:'Time Off'},
         {id:'finances',  icon:'💰', label:'Finances'},
       ]}]
     : [{ label:'My Progress', items:[
@@ -1557,6 +1558,7 @@ async function navigate(view) {
     else if (view === 'pupils') await renderPupilsList(content);
     else if (view === 'messages') await renderMessages(content, selectedPupilId);
     else if (view === 'finances') await renderFinances(content);
+    else if (view === 'timeoff') await renderTimeOff(content);
   } else {
     const pupil = await fetchPupil(selectedPupilId || currentProfile.pupil_id);
     if (view === 'dashboard') renderPupilDashboard(content, pupil);
@@ -1628,9 +1630,9 @@ function renderPupilDashboard(el, pupil) {
       <div class="next-lesson-date">${pupil.nextLesson.date}</div>
       <div class="next-lesson-topics">Topics: ${pupil.nextLesson.topics}</div>
       <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-        <a href="https://calendly.com/pa55pgh/30min" target="_blank" class="next-lesson-book">Standard £40</a>
-        <a href="https://calendly.com/pa55pgh/saturday-1-hour-lesson" target="_blank" class="next-lesson-book">Saturday £45</a>
-        <a href="https://calendly.com/pa55pgh/test-2-hours" target="_blank" class="next-lesson-book">Test</a>
+        <button class="next-lesson-book" onclick="navigate('bookings')">Standard £40</button>
+        <button class="next-lesson-book" onclick="navigate('bookings')">Saturday £45</button>
+        <button class="next-lesson-book" onclick="navigate('bookings')">Test</button>
       </div>
     </div>
     <div class="stats-grid">
@@ -1711,84 +1713,366 @@ async function saveProfile(pupilId) {
 }
 
 async function renderPupilBookings(el, pupil) {
+  await autoCompletePastBookings();
   const { data: bookings } = await sb.from('bookings')
-    .select('*')
-    .eq('pupil_id', pupil.id)
+    .select('*').eq('pupil_id', pupil.id)
     .order('start_time', { ascending: true });
 
   const now = new Date();
-  const upcoming = (bookings||[]).filter(b => new Date(b.start_time) >= now && b.status !== 'cancelled');
-  const past     = (bookings||[]).filter(b => new Date(b.start_time) < now && b.status !== 'cancelled');
+  const upcoming  = (bookings||[]).filter(b => b.status === 'active' && new Date(b.start_time) >= now);
+  const past      = (bookings||[]).filter(b => b.status === 'completed' || b.status === 'no-show');
   const cancelled = (bookings||[]).filter(b => b.status === 'cancelled');
 
   const bookingRow = (b, showCancel = false) => {
     const date = new Date(b.start_time);
     const timeStr = date.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
     const dateStr = date.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long'});
-    const colour = b.lesson_type==='Saturday Lesson'?'var(--yellow)':b.lesson_type==='Test'?'var(--green)':'var(--blue)';
-    return `<div class="card-sm">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:14px">
-          <div style="background:var(--bg3);border-radius:8px;padding:8px 12px;text-align:center;min-width:48px">
-            <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase">${date.toLocaleDateString('en-GB',{month:'short'})}</div>
-            <div style="font-size:1.3rem;font-weight:700;color:var(--text);line-height:1">${date.getDate()}</div>
-          </div>
-          <div>
-            <div style="font-size:.9rem;font-weight:600;color:var(--text)">${dateStr} · ${timeStr}</div>
-            <div style="font-size:.8rem;color:var(--muted);margin-top:2px">Pickup: ${b.pickup_location||'Not specified'}</div>
-          </div>
+    const colour = b.lesson_type==='Saturday Lesson'?'var(--yellow)':b.lesson_type==='Test'?'var(--green)':'var(--red)';
+    const canCancel = showCancel && (new Date(b.start_time) - now) > 12 * 60 * 60 * 1000;
+    return `<div class="card-sm" style="margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="background:var(--bg3);border-radius:8px;padding:8px 12px;text-align:center;min-width:52px;flex-shrink:0">
+          <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase">${date.toLocaleDateString('en-GB',{month:'short'})}</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--text);line-height:1">${date.getDate()}</div>
         </div>
-        <span style="font-size:.75rem;font-weight:600;color:${colour};background:${colour}18;padding:4px 12px;border-radius:100px;border:1px solid ${colour}33">${b.lesson_type}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.9rem;font-weight:600;color:var(--text)">${dateStr} · ${timeStr}</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Pickup: ${b.pickup_location||'Not specified'}</div>
+        </div>
+        <span style="font-size:.72rem;font-weight:700;color:${colour};background:${colour}18;padding:4px 10px;border-radius:100px;border:1px solid ${colour}33;white-space:nowrap">${b.lesson_type}</span>
       </div>
-      ${showCancel ? `
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-          <div style="font-size:.78rem;color:var(--muted)">Need to cancel or reschedule? Do it via your Calendly confirmation email or contact Philip directly.</div>
-          <a href="https://calendly.com/pa55pgh" target="_blank" class="btn-sm-outline" style="font-size:.78rem;padding:6px 14px">Cancel / Reschedule →</a>
+      ${canCancel ? `
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+          <button class="btn-sm-outline" style="font-size:.78rem;padding:6px 14px;color:var(--red);border-color:rgba(224,28,28,.3)" onclick="cancelPupilBooking('${b.id}')">Cancel lesson</button>
+        </div>
+      ` : showCancel ? `
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted)">
+          Within 12-hour cancellation window — contact Philip directly.
         </div>
       ` : ''}
     </div>`;
   };
 
   el.innerHTML = `
-    <div class="page-header">
-      <div class="page-title">My Bookings</div>
-      <div class="page-sub">${upcoming.length} upcoming · ${past.length} completed</div>
+    <div class="page-header flex justify-between align-center" style="flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="page-title">My Bookings</div>
+        <div class="page-sub">${upcoming.length} upcoming · ${past.length} completed</div>
+      </div>
+      <button class="btn-sm" onclick="showBookingFlow('${pupil.id}')">+ Book a Lesson</button>
     </div>
 
-    <div class="card" style="background:rgba(26,107,255,0.06);border-color:rgba(26,107,255,0.2);margin-bottom:24px;padding:16px 20px">
-      <div style="font-size:.88rem;color:var(--muted);margin-bottom:12px">Book your next lesson:</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <a href="https://calendly.com/pa55pgh/30min" target="_blank" class="next-lesson-book">Standard £40</a>
-        <a href="https://calendly.com/pa55pgh/saturday-1-hour-lesson" target="_blank" class="next-lesson-book">Saturday £45</a>
-        <a href="https://calendly.com/pa55pgh/test-2-hours" target="_blank" class="next-lesson-book">Test</a>
-      </div>
-    </div>
+    <div id="booking-flow-wrap"></div>
 
     ${upcoming.length > 0 ? `
       <div class="card-title" style="margin-bottom:10px">Upcoming</div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">
-        ${upcoming.map(b => bookingRow(b, true)).join('')}
-      </div>
-    ` : `<div class="card" style="text-align:center;padding:32px;margin-bottom:24px;color:var(--muted)">No upcoming lessons booked yet.</div>`}
+      <div style="margin-bottom:24px">${upcoming.map(b => bookingRow(b, true)).join('')}</div>
+    ` : `<div class="card" style="text-align:center;padding:32px;margin-bottom:24px;color:var(--muted)">No upcoming lessons yet. Tap <strong>+ Book a Lesson</strong> to get started.</div>`}
 
     ${past.length > 0 ? `
       <div class="card-title" style="margin-bottom:10px">Completed</div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">
-        ${past.map(b => `<div style="opacity:.55">${bookingRow(b)}</div>`).join('')}
-      </div>
+      <div style="margin-bottom:24px;opacity:.6">${past.map(b => bookingRow(b)).join('')}</div>
     ` : ''}
 
     ${cancelled.length > 0 ? `
       <div class="card-title" style="margin-bottom:10px;color:var(--red)">Cancelled</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        ${cancelled.map(b => `<div style="opacity:.4">${bookingRow(b)}</div>`).join('')}
-      </div>
+      <div style="opacity:.4">${cancelled.map(b => bookingRow(b)).join('')}</div>
     ` : ''}
   `;
 }
 
+// Auto-mark past active bookings as completed
+async function autoCompletePastBookings() {
+  const now = new Date().toISOString();
+  await sb.from('bookings')
+    .update({ status: 'completed' })
+    .eq('status', 'active')
+    .lt('start_time', now);
+}
+
+async function cancelPupilBooking(bookingId) {
+  if (!confirm('Cancel this lesson? This cannot be undone.')) return;
+  await sb.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
+  showToast('Lesson cancelled');
+  const pupil = await fetchPupil(selectedPupilId || currentProfile.pupil_id);
+  await renderPupilBookings(document.getElementById('content-area'), pupil);
+}
+
+// ── IN-APP BOOKING FLOW ──────────────────────────────────────────────────────
+
+async function showBookingFlow(pupilId) {
+  const wrap = document.getElementById('booking-flow-wrap');
+  wrap.innerHTML = `
+    <div class="card" style="margin-bottom:24px;border-color:rgba(224,28,28,.2);background:rgba(224,28,28,.04)">
+      <div class="card-title" style="margin-bottom:16px;color:var(--red)">Book a Lesson</div>
+
+      <div class="form-group">
+        <label class="form-label">Lesson type</label>
+        <div style="display:flex;flex-direction:column;gap:8px" id="lesson-type-options">
+          ${[
+            {id:'Standard Lesson', label:'Standard Lesson', price:'£40', desc:'1 hour · Mon–Fri'},
+            {id:'Saturday Lesson', label:'Saturday Lesson', price:'£45', desc:'1 hour · Saturday'},
+            {id:'Test', label:'Test', price:'Contact Philip', desc:'2 hours · Weekdays & Saturday'}
+          ].map(t => `
+            <label style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:border-color .15s" onclick="selectLessonType('${t.id}', this)">
+              <input type="radio" name="lesson-type" value="${t.id}" style="accent-color:var(--red);width:16px;height:16px;flex-shrink:0"/>
+              <div style="flex:1">
+                <div style="font-size:.9rem;font-weight:700;color:var(--text)">${t.label} <span style="color:var(--red)">${t.price}</span></div>
+                <div style="font-size:.78rem;color:var(--muted);margin-top:2px">${t.desc}</div>
+              </div>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="form-group" id="pickup-group" style="display:none">
+        <label class="form-label">Pickup location</label>
+        <select class="form-input" id="booking-pickup">
+          <option value="">Select pickup point...</option>
+          <option>St Michael's</option>
+          <option>St Joseph's</option>
+          <option>Dunnes</option>
+          <option>Mount Lourdes</option>
+          <option>St Frances</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div id="slot-picker" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Select a date</label>
+          <div id="date-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:4px"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:10px">
+            <button class="btn-ghost" id="prev-week-btn" onclick="changeBookingWeek(-1)" style="font-size:.8rem">← Prev</button>
+            <span id="week-label" style="font-size:.8rem;color:var(--muted);align-self:center"></span>
+            <button class="btn-ghost" id="next-week-btn" onclick="changeBookingWeek(1)" style="font-size:.8rem">Next →</button>
+          </div>
+        </div>
+
+        <div class="form-group" id="time-group" style="display:none">
+          <label class="form-label">Available times</label>
+          <div id="time-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px"></div>
+        </div>
+      </div>
+
+      <div id="booking-confirm-section" style="display:none">
+        <div class="card-sm" style="background:var(--bg3);margin-bottom:16px" id="booking-summary"></div>
+        <button class="btn-primary" onclick="confirmBooking('${pupilId}')">Confirm Booking</button>
+      </div>
+
+      <button class="btn-ghost" onclick="document.getElementById('booking-flow-wrap').innerHTML=''" style="margin-top:12px;width:100%;font-size:.82rem">Cancel</button>
+    </div>
+  `;
+  window._bookingState = { pupilId, lessonType: null, date: null, time: null, weekOffset: 0 };
+}
+
+function selectLessonType(type, label) {
+  document.querySelectorAll('#lesson-type-options label').forEach(l => l.style.borderColor = 'var(--border)');
+  label.style.borderColor = 'var(--red)';
+  window._bookingState.lessonType = type;
+  window._bookingState.date = null;
+  window._bookingState.time = null;
+  document.getElementById('pickup-group').style.display = 'block';
+  document.getElementById('slot-picker').style.display = 'block';
+  document.getElementById('time-group').style.display = 'none';
+  document.getElementById('booking-confirm-section').style.display = 'none';
+  window._bookingState.weekOffset = 0;
+  renderBookingDates();
+}
+
+async function renderBookingDates() {
+  const { lessonType, weekOffset } = window._bookingState;
+  const isSaturday = lessonType === 'Saturday Lesson';
+
+  // Get availability & blocked dates
+  const { data: avail } = await sb.from('availability').select('*');
+  const { data: blocked } = await sb.from('blocked_dates').select('*');
+  const { data: existingBookings } = await sb.from('bookings')
+    .select('start_time, lesson_type')
+    .gte('start_time', new Date().toISOString())
+    .neq('status', 'cancelled');
+
+  const blockedSet = new Set((blocked||[]).map(b => b.date));
+
+  // Build week
+  const today = new Date(); today.setHours(0,0,0,0);
+  const monday = new Date(today);
+  const dow = today.getDay();
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  const weekStart = new Date(monday);
+  weekStart.setDate(monday.getDate() + weekOffset * 7);
+
+  document.getElementById('week-label').textContent =
+    weekStart.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' – ' +
+    new Date(weekStart.getTime() + 6*86400000).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+
+  document.getElementById('prev-week-btn').style.opacity = weekOffset <= 0 ? '.3' : '1';
+  document.getElementById('prev-week-btn').disabled = weekOffset <= 0;
+  document.getElementById('next-week-btn').style.opacity = weekOffset >= 3 ? '.3' : '1';
+  document.getElementById('next-week-btn').disabled = weekOffset >= 3;
+
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
+    const dayNum = d.getDay(); // 0=Sun
+    const dateStr = d.toISOString().split('T')[0];
+    const isPast = d < today;
+    const isBlocked = blockedSet.has(dateStr);
+    const dayAvail = (avail||[]).find(a => a.day_of_week === (dayNum === 0 ? 7 : dayNum));
+
+    // For Saturday lesson type, only Saturdays are selectable
+    const wrongDay = isSaturday ? dayNum !== 6 : dayNum === 0;
+    const isDisabled = isPast || isBlocked || !dayAvail || wrongDay;
+    const isSelected = window._bookingState.date === dateStr;
+
+    html += `<button onclick="${isDisabled ? '' : `selectBookingDate('${dateStr}')`}"
+      style="border-radius:8px;padding:8px 4px;border:1.5px solid ${isSelected ? 'var(--red)' : 'var(--border)'};
+      background:${isSelected ? 'rgba(224,28,28,.12)' : isDisabled ? 'var(--bg3)' : 'var(--bg2)'};
+      color:${isDisabled ? 'var(--muted2)' : isSelected ? 'var(--red)' : 'var(--text)'};
+      cursor:${isDisabled ? 'not-allowed' : 'pointer'};font-family:var(--sans);
+      display:flex;flex-direction:column;align-items:center;gap:2px;transition:.15s;width:100%">
+      <span style="font-size:.62rem;font-weight:600;text-transform:uppercase">${days[i]}</span>
+      <span style="font-size:.95rem;font-weight:700">${d.getDate()}</span>
+    </button>`;
+  }
+  document.getElementById('date-grid').innerHTML = html;
+
+  // If a date is already selected, re-render times
+  if (window._bookingState.date) renderBookingTimes();
+}
+
+async function selectBookingDate(dateStr) {
+  window._bookingState.date = dateStr;
+  window._bookingState.time = null;
+  document.getElementById('booking-confirm-section').style.display = 'none';
+  renderBookingDates();
+  renderBookingTimes();
+}
+
+async function renderBookingTimes() {
+  const { lessonType, date } = window._bookingState;
+  const isTest = lessonType === 'Test';
+  const duration = isTest ? 120 : 60; // minutes
+  const buffer = 10;
+  const slotSize = duration + buffer;
+
+  const d = new Date(date);
+  const dayNum = d.getDay(); // 0=Sun, 6=Sat
+
+  // Get availability for this day
+  const { data: avail } = await sb.from('availability').select('*');
+  const dayAvail = (avail||[]).find(a => a.day_of_week === (dayNum === 0 ? 7 : dayNum));
+  if (!dayAvail) return;
+
+  // Get existing bookings for this date
+  const dayStart = new Date(date + 'T00:00:00');
+  const dayEnd = new Date(date + 'T23:59:59');
+  const { data: existingBookings } = await sb.from('bookings')
+    .select('start_time, lesson_type')
+    .gte('start_time', dayStart.toISOString())
+    .lte('start_time', dayEnd.toISOString())
+    .neq('status', 'cancelled');
+
+  // Build booked slots
+  const bookedSlots = (existingBookings||[]).map(b => {
+    const start = new Date(b.start_time);
+    const dur = b.lesson_type === 'Test' ? 120 : 60;
+    return { start: start.getHours()*60 + start.getMinutes(), end: start.getHours()*60 + start.getMinutes() + dur + buffer };
+  });
+
+  // Generate slots
+  const [startH, startM] = dayAvail.start_time.split(':').map(Number);
+  const [endH, endM] = dayAvail.end_time.split(':').map(Number);
+  const startMin = startH * 60 + startM;
+  const endMin = endH * 60 + endM;
+
+  const now = new Date();
+  const slots = [];
+  for (let m = startMin; m + slotSize <= endMin; m += 60) {
+    const slotDate = new Date(date + 'T' + String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0') + ':00');
+    if (slotDate <= now) continue; // past
+    const isBooked = bookedSlots.some(b => m < b.end && m + slotSize > b.start);
+    slots.push({ min: m, booked: isBooked, date: slotDate });
+  }
+
+  document.getElementById('time-group').style.display = 'block';
+  if (slots.length === 0) {
+    document.getElementById('time-grid').innerHTML = `<div style="font-size:.84rem;color:var(--muted)">No available slots on this day.</div>`;
+    return;
+  }
+
+  document.getElementById('time-grid').innerHTML = slots.map(s => {
+    const label = String(Math.floor(s.min/60)).padStart(2,'0') + ':' + String(s.min%60).padStart(2,'0');
+    const isSelected = window._bookingState.time === label;
+    return `<button onclick="${s.booked ? '' : `selectBookingTime('${label}')`}"
+      style="padding:8px 14px;border-radius:8px;border:1.5px solid ${isSelected ? 'var(--red)' : s.booked ? 'var(--border)' : 'var(--border)'};
+      background:${isSelected ? 'rgba(224,28,28,.12)' : s.booked ? 'var(--bg3)' : 'var(--bg2)'};
+      color:${s.booked ? 'var(--muted2)' : isSelected ? 'var(--red)' : 'var(--text)'};
+      font-family:var(--sans);font-size:.85rem;font-weight:600;
+      cursor:${s.booked ? 'not-allowed' : 'pointer'};transition:.15s;text-decoration:${s.booked ? 'line-through' : 'none'}">
+      ${label}
+    </button>`;
+  }).join('');
+}
+
+function selectBookingTime(time) {
+  window._bookingState.time = time;
+  renderBookingTimes(); // refresh to highlight selected
+
+  const { lessonType, date } = window._bookingState;
+  const dateObj = new Date(date + 'T' + time + ':00');
+  const dateLabel = dateObj.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  const price = lessonType === 'Standard Lesson' ? '£40' : lessonType === 'Saturday Lesson' ? '£45' : 'Contact Philip for price';
+
+  document.getElementById('booking-summary').innerHTML = `
+    <div style="font-size:.82rem;color:var(--muted);margin-bottom:8px">Booking summary</div>
+    <div style="font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:4px">${lessonType} — ${price}</div>
+    <div style="font-size:.85rem;color:var(--muted)">${dateLabel} at ${time}</div>
+  `;
+  document.getElementById('booking-confirm-section').style.display = 'block';
+}
+
+function changeBookingWeek(dir) {
+  const newOffset = window._bookingState.weekOffset + dir;
+  if (newOffset < 0 || newOffset > 3) return;
+  window._bookingState.weekOffset = newOffset;
+  window._bookingState.date = null;
+  window._bookingState.time = null;
+  document.getElementById('time-group').style.display = 'none';
+  document.getElementById('booking-confirm-section').style.display = 'none';
+  renderBookingDates();
+}
+
+async function confirmBooking(pupilId) {
+  const { lessonType, date, time } = window._bookingState;
+  const pickup = document.getElementById('booking-pickup').value;
+  if (!lessonType) { showToast('Please select a lesson type'); return; }
+  if (!pickup) { showToast('Please select a pickup location'); return; }
+  if (!date || !time) { showToast('Please select a date and time'); return; }
+
+  const startTime = new Date(date + 'T' + time + ':00').toISOString();
+  const { data: profile } = await sb.from('profiles').select('name,email').eq('id', currentUser.id).single();
+
+  await sb.from('bookings').insert({
+    calendly_event_id: 'inapp-' + Date.now(),
+    invitee_name: profile.name,
+    invitee_email: profile.email,
+    lesson_type: lessonType,
+    start_time: startTime,
+    pickup_location: pickup,
+    status: 'active',
+    pupil_id: pupilId,
+  });
+
+  showToast('Lesson booked!');
+  document.getElementById('booking-flow-wrap').innerHTML = '';
+  const pupil = await fetchPupil(pupilId);
+  await renderPupilBookings(document.getElementById('content-area'), pupil);
+}
+
 function renderLessons(el, pupil) {
-  el.innerHTML = `<div class="page-header flex justify-between align-center" style="flex-wrap:wrap;gap:12px"><div><div class="page-title">Lesson Log</div><div class="page-sub">${pupil.totalLessons} lessons completed</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a href="https://calendly.com/pa55pgh/30min" target="_blank" class="next-lesson-book">Standard £40</a><a href="https://calendly.com/pa55pgh/saturday-1-hour-lesson" target="_blank" class="next-lesson-book">Saturday £45</a><a href="https://calendly.com/pa55pgh/test-2-hours" target="_blank" class="next-lesson-book">Test</a></div></div><div class="lesson-list">${pupil.lessons.slice().reverse().map(l=>lessonCard(l)).join('')}</div>`;
+  el.innerHTML = `<div class="page-header flex justify-between align-center" style="flex-wrap:wrap;gap:12px"><div><div class="page-title">Lesson Log</div><div class="page-sub">${pupil.totalLessons} lessons completed</div></div><button class="btn-sm" onclick="navigate('bookings')">+ Book a Lesson</button></div><div class="lesson-list">${pupil.lessons.slice().reverse().map(l=>lessonCard(l)).join('')}</div>`;
 }
 
 function lessonCard(l) {
@@ -1908,9 +2192,10 @@ async function sendMessage(pupilId) {
 }
 
 async function renderBookings(el) {
+  await autoCompletePastBookings();
   const { data: bookings } = await sb.from('bookings').select('*').order('start_time', { ascending: true });
-  const upcoming = (bookings||[]).filter(b => new Date(b.start_time) >= new Date() && b.status !== 'cancelled');
-  const past = (bookings||[]).filter(b => new Date(b.start_time) < new Date());
+  const upcoming = (bookings||[]).filter(b => new Date(b.start_time) >= new Date() && b.status === 'active');
+  const past = (bookings||[]).filter(b => b.status === 'completed' || b.status === 'no-show' || (new Date(b.start_time) < new Date() && b.status === 'active'));
   const { data: pupils } = await sb.from('pupils').select('id, name, email').order('name');
 
   el.innerHTML = `
@@ -2073,10 +2358,11 @@ function renderCalendar(el) {
   el.innerHTML = `
     <div class="page-header">
       <div class="page-title">Your Calendar</div>
-      <div class="page-sub">All upcoming bookings from Calendly</div>
+      <div class="page-sub">All upcoming bookings</div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;min-height:600px">
-      <iframe src="https://calendly.com/pa55pgh?embed_domain=sparkling-blini-33cc58.netlify.app&embed_type=inline&hide_landing_page_details=1&hide_gdpr_banner=1"
+      <!-- Calendly removed - bookings now in-app -->
+      <!-- <iframe src="https://calendly.com/pa55pgh?embed_domain=sparkling-blini-33cc58.netlify.app&embed_type=inline&hide_landing_page_details=1&hide_gdpr_banner=1"
         width="100%" height="700" frameborder="0" style="display:block"></iframe>
     </div>
     <div style="margin-top:16px;font-size:.82rem;color:var(--muted);text-align:center">
@@ -2107,7 +2393,7 @@ async function renderInstructorDashboard(el) {
       ${upcoming.length > 3 ? `<button class="btn-sm-outline" style="margin-bottom:24px" onclick="navigate('bookings')">View all ${upcoming.length} bookings →</button>` : ''}
     ` : `
       <div class="card" style="text-align:center;padding:32px;margin-bottom:24px">
-        <div style="font-size:.88rem;color:var(--muted)">No upcoming bookings yet — they'll appear here automatically when pupils book on Calendly.</div>
+        <div style="font-size:.88rem;color:var(--muted)">No upcoming bookings yet. Pupils can book through their portal, or add a manual booking above.</div>
       </div>
     `}
 
@@ -2399,7 +2685,7 @@ async function showDayView(dateStr, bookings, lessons) {
       : `<div style="display:flex;flex-direction:column;gap:12px">
           ${dayBookings.map(b => {
             const t = new Date(b.start_time).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-            const colour = b.lesson_type==='Saturday Lesson'?'var(--yellow)':b.lesson_type==='Test'?'var(--green)':'var(--blue)';
+            const colour = b.lesson_type==='Saturday Lesson'?'var(--yellow)':b.lesson_type==='Test'?'#a78bfa':'var(--red)';
             return `
               <div class="card" style="border-left:3px solid ${colour}">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
@@ -2412,7 +2698,7 @@ async function showDayView(dateStr, bookings, lessons) {
                 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px">
                   <div><div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Time</div><div style="font-size:.95rem;font-weight:600;color:var(--text)">${t}</div></div>
                   <div><div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Pickup</div><div style="font-size:.95rem;font-weight:600;color:var(--text)">${b.pickup_location||'Not specified'}</div></div>
-                  <div><div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Status</div><div style="font-size:.95rem;font-weight:600;color:${b.status==='cancelled'?'var(--red)':'var(--green)'};">${b.status==='cancelled'?'Cancelled':'Confirmed'}</div></div>
+                  <div><div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Status</div><div style="font-size:.95rem;font-weight:600;color:${b.status==='cancelled'?'var(--red)':b.status==='no-show'?'#f97316':b.status==='completed'?'var(--muted)':'var(--green)'};">${b.status==='cancelled'?'Cancelled':b.status==='no-show'?'No Show':b.status==='completed'?'Completed':'Confirmed'}</div></div>
                 </div>
                 ${b.status !== 'cancelled' && b.status !== 'no-show' ? `
                   <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
@@ -2520,7 +2806,7 @@ async function renderDiary(el) {
               ? `<div style="font-size:.72rem;color:var(--muted2)">No lessons</div>`
               : `${dayBookings.map(b => {
                   const t = new Date(b.start_time).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-                  const colour = b.lesson_type==='Saturday Lesson'?'var(--yellow)':b.lesson_type==='Test'?'var(--green)':'var(--blue)';
+                  const colour = b.lesson_type==='Saturday Lesson'?'var(--yellow)':b.lesson_type==='Test'?'#a78bfa':'var(--red)';
                   return `<div style="background:${colour}18;border-left:3px solid ${colour};border-radius:4px;padding:6px 8px;margin-bottom:4px">
                     <div style="font-size:.72rem;font-weight:600;color:${colour}">${t} · Booked</div>
                     <div style="font-size:.75rem;color:var(--text)">${b.invitee_name}</div>
@@ -2557,6 +2843,87 @@ function changeDiaryWeek(offset) {
 }
 
 // ── FINANCES ──────────────────────────────────────────────────────────────────
+async function renderTimeOff(el) {
+  const { data: blocked } = await sb.from('blocked_dates').select('*').order('date', { ascending: true });
+  const { data: avail } = await sb.from('availability').select('*').order('day_of_week');
+
+  const dayNames = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  el.innerHTML = `
+    <div class="page-header">
+      <div class="page-title">Availability & Time Off</div>
+      <div class="page-sub">Manage your working hours and block dates off</div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title" style="margin-bottom:16px">Working Hours</div>
+      ${(avail||[]).map(a => `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+          <div style="font-size:.88rem;font-weight:600;color:var(--text);width:90px;flex-shrink:0">${dayNames[a.day_of_week]}</div>
+          <input type="time" value="${a.start_time}" id="avail-start-${a.id}" class="form-input" style="width:110px;padding:6px 10px;font-size:.85rem"/>
+          <span style="color:var(--muted);font-size:.82rem">to</span>
+          <input type="time" value="${a.end_time}" id="avail-end-${a.id}" class="form-input" style="width:110px;padding:6px 10px;font-size:.85rem"/>
+          <button class="btn-sm" onclick="saveAvailability('${a.id}')" style="font-size:.75rem;padding:6px 12px">Save</button>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title" style="margin-bottom:16px">Block a Date</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <div class="form-group" style="margin-bottom:0;flex:1;min-width:140px">
+          <label class="form-label">Date</label>
+          <input type="date" id="block-date" class="form-input" min="${new Date().toISOString().split('T')[0]}"/>
+        </div>
+        <div class="form-group" style="margin-bottom:0;flex:2;min-width:160px">
+          <label class="form-label">Reason (optional)</label>
+          <input type="text" id="block-reason" class="form-input" placeholder="e.g. Holiday, Personal"/>
+        </div>
+        <button class="btn-sm" onclick="addBlockedDate()" style="flex-shrink:0">Block Date</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Blocked Dates</div>
+      ${(blocked||[]).length === 0
+        ? `<div style="font-size:.85rem;color:var(--muted)">No dates blocked.</div>`
+        : (blocked||[]).map(b => {
+            const d = new Date(b.date + 'T12:00:00');
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">
+              <div>
+                <div style="font-size:.9rem;font-weight:600;color:var(--text)">${d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+                ${b.reason ? `<div style="font-size:.78rem;color:var(--muted);margin-top:2px">${b.reason}</div>` : ''}
+              </div>
+              <button class="btn-sm-outline" style="font-size:.75rem;color:var(--red);border-color:rgba(224,28,28,.3)" onclick="removeBlockedDate('${b.id}')">Remove</button>
+            </div>`;
+          }).join('')}
+    </div>
+  `;
+}
+
+async function saveAvailability(id) {
+  const start = document.getElementById('avail-start-' + id).value;
+  const end = document.getElementById('avail-end-' + id).value;
+  if (!start || !end) { showToast('Please set both times'); return; }
+  await sb.from('availability').update({ start_time: start, end_time: end }).eq('id', id);
+  showToast('Hours updated');
+}
+
+async function addBlockedDate() {
+  const date = document.getElementById('block-date').value;
+  const reason = document.getElementById('block-reason').value.trim();
+  if (!date) { showToast('Please select a date'); return; }
+  await sb.from('blocked_dates').insert({ date, reason: reason || null });
+  showToast('Date blocked');
+  await renderTimeOff(document.getElementById('content-area'));
+}
+
+async function removeBlockedDate(id) {
+  await sb.from('blocked_dates').delete().eq('id', id);
+  showToast('Date unblocked');
+  await renderTimeOff(document.getElementById('content-area'));
+}
+
 async function renderFinances(el) {
   const { data: expenses } = await sb.from('expenses').select('*').order('date', { ascending: false });
   const list = expenses || [];
