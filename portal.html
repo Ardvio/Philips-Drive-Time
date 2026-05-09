@@ -146,8 +146,9 @@ body{
   transition:background .15s,color .15s;
 }
 .login-tab.active{
-  background:var(--red);
-  color:#fff;
+  background:var(--red) !important;
+  color:#fff !important;
+  border-color:var(--red) !important;
 }
 .form-group{margin-bottom:16px}
 .form-label{
@@ -1588,7 +1589,11 @@ async function fetchPupil(pupilId) {
 
 async function fetchAllPupils(includeArchived = false) {
   let query = sb.from('pupils').select('*').order('created_at');
-  if (!includeArchived) query = query.eq('archived', false);
+  if (!includeArchived) {
+    query = query.or('archived.eq.false,archived.is.null');
+  } else {
+    query = query.eq('archived', true);
+  }
   const { data: pupils } = await query;
   const result = [];
   for (const p of (pupils||[])) result.push(await fetchPupil(p.id));
@@ -2583,7 +2588,7 @@ async function cycleSkill(pupilId, skill, btn, e) {
 
 async function renderPupilsList(el, showArchived = false) {
   const pupils = await fetchAllPupils(showArchived);
-  const activePupils = showArchived ? pupils.filter(p => p.archived) : pupils;
+  const activePupils = pupils;
   const { data: allBookings } = await sb.from('bookings').select('pupil_id').not('pupil_id', 'is', null);
   const bookingCounts = {};
   (allBookings||[]).forEach(b => { bookingCounts[b.pupil_id] = (bookingCounts[b.pupil_id]||0) + 1; });
