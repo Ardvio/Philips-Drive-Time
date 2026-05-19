@@ -1435,15 +1435,6 @@ async function doRegister() {
     confScreen.style.display = 'none';
     bootApp();
   };
-  setTimeout(() => {
-    const content = document.getElementById('content-area');
-    if (content) {
-      const banner = document.createElement('div');
-      banner.style.cssText = 'background:rgba(26,107,255,0.12);border:1px solid rgba(26,107,255,0.3);border-radius:10px;padding:16px 20px;margin-bottom:20px;font-size:.88rem;color:var(--text);line-height:1.55;';
-      banner.innerHTML = `<strong style="color:var(--blue)">Important:</strong> When booking a lesson, always use <strong style="color:var(--text)">${email}</strong> as your email so your bookings appear here automatically.`;
-      content.insertBefore(banner, content.firstChild);
-    }
-  }, 600);
 }
 
 let loginType = 'pupil';
@@ -1662,9 +1653,6 @@ function renderPupilDashboard(el, pupil) {
       <span>Philip has logged your last lesson — <strong style="color:#fff">Lesson ${pupil.lessons[pupil.lessons.length-1].num}: ${pupil.lessons[pupil.lessons.length-1].title}</strong></span>
       <button class="btn-sm-outline" style="font-size:.78rem;padding:5px 12px;color:#86efac;border-color:rgba(34,197,94,.3)" onclick="navigate('lessons')">View →</button>
     </div>` : ''}
-    <div style="background:rgba(26,107,255,0.08);border:1px solid rgba(26,107,255,0.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:.84rem;color:var(--muted);line-height:1.55">
-      When booking a lesson, always use <strong style="color:var(--text)">${pupil.email}</strong> so your bookings link to this account automatically.
-    </div>
     <div class="next-lesson">
       <div class="next-lesson-label">Next lesson</div>
       <div class="next-lesson-date">${pupil.nextLesson.date}</div>
