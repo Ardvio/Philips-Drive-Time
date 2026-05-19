@@ -1200,6 +1200,21 @@ const SUPABASE_URL = 'https://lwfseimncimulusdxzwf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZnNlaW1uY2ltdWx1c2R4endmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzQ1MjYsImV4cCI6MjA5MzY1MDUyNn0.XKT6QRXch8gDs8SQImMGhqJz0Sv_iIWXLQRQT8LaKqw';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+async function triggerSMS(type, data) {
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/send-sms`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+      },
+      body: JSON.stringify({ type, data }),
+    });
+  } catch(e) {
+    console.warn('SMS trigger failed:', e);
+  }
+}
+
 const NI_SYLLABUS = [
   { category:'Safety & Vehicle Checks', skills:[
     { name:'Cockpit drill (DSSSM)', desc:'DSSSM stands for Doors, Seat, Steering, Mirrors, Seatbelt. Before every drive you must check all five in order. Philip will drill this until it becomes automatic.' },
@@ -1797,7 +1812,18 @@ async function autoCompletePastBookings() {
 
 async function cancelPupilBooking(bookingId) {
   if (!confirm('Cancel this lesson? This cannot be undone.')) return;
+  const { data: booking } = await sb.from('bookings').select('*').eq('id', bookingId).single();
   await sb.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
+  // SMS to Philip
+  if (booking) {
+    const dateObj = new Date(booking.start_time);
+    triggerSMS('booking_cancelled', {
+      pupil_name: booking.invitee_name,
+      lesson_type: booking.lesson_type,
+      date: dateObj.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),
+      time: dateObj.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),
+    });
+  }
   showToast('Lesson cancelled');
   const pupil = await fetchPupil(selectedPupilId || currentProfile.pupil_id);
   await renderPupilBookings(document.getElementById('content-area'), pupil);
@@ -2068,33 +2094,66 @@ async function confirmBooking(pupilId) {
   if (!pickup) { showToast('Please enter a pickup location'); return; }
   if (!date || !time) { showToast('Please select a date and time'); return; }
 
-  // Build local datetime without timezone shift
-  const [yr, mo, dy] = date.split('-').map(Number);
-  const [hr, mn] = time.split(':').map(Number);
-  const startTime = new Date(yr, mo-1, dy, hr, mn, 0).toISOString();
-
   const btn = document.querySelector('#booking-confirm-section .btn-primary');
   btn.textContent = 'Booking...'; btn.disabled = true;
 
-  const { data: profile } = await sb.from('profiles').select('name,email').eq('id', currentUser.id).single();
+  try {
+    // Build local datetime without timezone shift
+    const [yr, mo, dy] = date.split('-').map(Number);
+    const [hr, mn] = time.split(':').map(Number);
+    const startTime = new Date(yr, mo-1, dy, hr, mn, 0).toISOString();
 
-  const { error } = await sb.from('bookings').insert({
-    calendly_event_id: 'inapp-' + Date.now(),
-    invitee_name: profile.name,
-    invitee_email: profile.email,
-    lesson_type: lessonType,
-    start_time: startTime,
-    pickup_location: pickup,
-    status: 'active',
-    pupil_id: pupilId,
-  });
+    // Get profile — fall back to currentUser metadata if fetch fails
+    let inviteeName = currentProfile?.name || currentUser?.email || 'Pupil';
+    let inviteeEmail = currentUser?.email || '';
+    const { data: profile } = await sb.from('profiles').select('name,email').eq('id', currentUser.id).single();
+    if (profile) { inviteeName = profile.name; inviteeEmail = profile.email; }
 
-  if (error) { showToast('Error — please try again'); btn.textContent = 'Confirm Booking'; btn.disabled = false; return; }
+    // Get pupil_id — use passed param or fall back to profile's pupil_id
+    const resolvedPupilId = pupilId || currentProfile?.pupil_id;
+    if (!resolvedPupilId) { showToast('Could not identify pupil — please refresh and try again'); btn.textContent = 'Confirm Booking'; btn.disabled = false; return; }
 
-  showToast('🎉 Lesson booked!');
-  document.getElementById('booking-flow-wrap').innerHTML = '';
-  const pupil = await fetchPupil(pupilId);
-  await renderPupilBookings(document.getElementById('content-area'), pupil);
+    const { error } = await sb.from('bookings').insert({
+      calendly_event_id: 'inapp-' + Date.now(),
+      invitee_name: inviteeName,
+      invitee_email: inviteeEmail,
+      lesson_type: lessonType,
+      start_time: startTime,
+      pickup_location: pickup,
+      status: 'active',
+      pupil_id: resolvedPupilId,
+    });
+
+    if (error) {
+      console.error('Booking insert error:', error);
+      showToast('Error: ' + (error.message || 'Could not save booking'));
+      btn.textContent = 'Confirm Booking'; btn.disabled = false;
+      return;
+    }
+
+    // SMS notifications
+    const dateObj = new Date(yr, mo-1, dy, hr, mn, 0);
+    const dateLabel = dateObj.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+    const { data: pupilData } = await sb.from('pupils').select('phone').eq('id', resolvedPupilId).single();
+    triggerSMS('booking_created', {
+      pupil_name: inviteeName,
+      pupil_phone: pupilData?.phone || null,
+      lesson_type: lessonType,
+      date: dateLabel,
+      time: time,
+      pickup_location: pickup,
+    });
+
+    showToast('🎉 Lesson booked!');
+    document.getElementById('booking-flow-wrap').innerHTML = '';
+    const pupil = await fetchPupil(resolvedPupilId);
+    await renderPupilBookings(document.getElementById('content-area'), pupil);
+
+  } catch(e) {
+    console.error('confirmBooking error:', e);
+    showToast('Something went wrong — please try again');
+    btn.textContent = 'Confirm Booking'; btn.disabled = false;
+  }
 }
 
 function renderLessons(el, pupil) {
@@ -2565,6 +2624,15 @@ async function submitLesson(pupilId) {
   const { count } = await sb.from('lessons').select('*',{count:'exact',head:true}).eq('pupil_id',pupilId);
   const newNum = (count||0)+1;
   await sb.from('lessons').insert({ pupil_id:pupilId, lesson_num:newNum, date, duration:parseInt(dur), title, topics:checked, notes, rating:addLessonRating });
+
+  // SMS to pupil
+  const { data: pupilSMS } = await sb.from('pupils').select('phone').eq('id', pupilId).single();
+  triggerSMS('lesson_logged', {
+    pupil_phone: pupilSMS?.phone || null,
+    lesson_num: newNum,
+    date: new Date(date + 'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),
+    rating: addLessonRating,
+  });
   const updates = {};
   if (nextTopics) updates.next_lesson_topics = nextTopics;
   if (nextDate) updates.next_lesson_date = nextDate;
