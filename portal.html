@@ -1417,15 +1417,6 @@ async function doRegister() {
     confScreen.style.display = 'none';
     bootApp();
   };
-  setTimeout(() => {
-    const content = document.getElementById('content-area');
-    if (content) {
-      const banner = document.createElement('div');
-      banner.style.cssText = 'background:rgba(26,107,255,0.12);border:1px solid rgba(26,107,255,0.3);border-radius:10px;padding:16px 20px;margin-bottom:20px;font-size:.88rem;color:var(--text);line-height:1.55;';
-      banner.innerHTML = `<strong style="color:var(--green)">Welcome!</strong> Your account is ready. Head to <strong style="color:var(--text)">My Bookings</strong> to book your first lesson.`;
-      content.insertBefore(banner, content.firstChild);
-    }
-  }, 600);
 }
 
 let loginType = 'pupil';
@@ -1442,7 +1433,14 @@ async function doLogin() {
   errEl.style.display = 'none';
   btn.textContent = 'Signing in...'; btn.disabled = true;
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) { errEl.textContent = 'Incorrect email or password.'; errEl.style.display = 'block'; btn.textContent = 'Sign In'; btn.disabled = false; return; }
+  if (error) {
+    if (error.message.toLowerCase().includes('email not confirmed') || error.message.toLowerCase().includes('not confirmed')) {
+      errEl.textContent = 'Please check your email and click the confirmation link before signing in.';
+    } else {
+      errEl.textContent = 'Incorrect email or password.';
+    }
+    errEl.style.display = 'block'; btn.textContent = 'Sign In'; btn.disabled = false; return;
+  }
 
   // Check role matches selected tab
   const { data: profile } = await sb.from('profiles').select('role').eq('id', data.user.id).single();
