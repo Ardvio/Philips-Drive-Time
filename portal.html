@@ -1057,6 +1057,25 @@ select.form-input option{background:var(--bg2)}
 </div>
 
 <!-- ── REGISTER ── -->
+<!-- ACCESS CODE SCREEN -->
+<div id="access-code-screen" style="display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;">
+  <div class="login-glow"></div>
+  <div class="login-card" style="position:relative;z-index:1">
+    <div class="login-logo"><div class="logo-dot"></div>Philip's <span>Drive Time</span></div>
+    <div class="login-title">Enter access code</div>
+    <p class="login-sub" style="margin-bottom:20px">Philip will give you a code when you first get in touch.</p>
+    <div class="form-group">
+      <label class="form-label">Access code</label>
+      <input class="form-input" id="access-code-input" type="text" placeholder="Enter your code..." autocomplete="off" style="text-transform:uppercase;letter-spacing:.1em;font-weight:700"/>
+    </div>
+    <div class="login-error" id="access-code-error"></div>
+    <button class="btn-primary" onclick="checkAccessCode()">Continue</button>
+    <div style="text-align:center;margin-top:16px">
+      <button onclick="showLogin()" style="background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:.84rem;cursor:pointer">← Back to login</button>
+    </div>
+  </div>
+</div>
+
 <div id="register-screen" style="display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;">
   <div class="login-glow"></div>
   <div class="login-card" style="max-width:460px">
@@ -1195,27 +1214,10 @@ if (typeof supabase === 'undefined') {
   document.body.innerHTML = '<div style="color:white;padding:40px;text-align:center;font-family:sans-serif"><h2>Connection error</h2><p style="opacity:.6;margin-top:8px">Please refresh the page.</p></div>';
 }
 
-
+const CALENDLY_URL = 'https://calendly.com/pa55pgh/30min';
 const SUPABASE_URL = 'https://lwfseimncimulusdxzwf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZnNlaW1uY2ltdWx1c2R4endmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzQ1MjYsImV4cCI6MjA5MzY1MDUyNn0.XKT6QRXch8gDs8SQImMGhqJz0Sv_iIWXLQRQT8LaKqw';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-async function triggerSMS(type, data) {
-  try {
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/send-sms`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-      },
-      body: JSON.stringify({ type, data }),
-    });
-    const json = await res.json();
-    console.log('SMS result:', json);
-  } catch(e) {
-    console.warn('SMS trigger failed:', e);
-  }
-}
 
 const NI_SYLLABUS = [
   { category:'Safety & Vehicle Checks', skills:[
@@ -1352,7 +1354,7 @@ async function loadProfileAndBoot() {
 
 function showRegister() {
   document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('register-screen').style.display = 'flex';
+  document.getElementById('access-code-screen').style.display = 'flex';
 }
 function showForgot() {
   document.getElementById('login-screen').style.display = 'none';
@@ -1361,7 +1363,23 @@ function showForgot() {
 function showLogin() {
   document.getElementById('register-screen').style.display = 'none';
   document.getElementById('forgot-screen').style.display = 'none';
+  document.getElementById('access-code-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
+}
+
+async function checkAccessCode() {
+  const input = document.getElementById('access-code-input').value.trim().toUpperCase();
+  const errEl = document.getElementById('access-code-error');
+  errEl.style.display = 'none';
+  if (!input) { errEl.textContent = 'Please enter the access code.'; errEl.style.display = 'block'; return; }
+  const { data } = await sb.from('access_codes').select('code').eq('id', 1).single();
+  if (!data || input !== data.code.toUpperCase()) {
+    errEl.textContent = 'Incorrect code. Contact Philip to get your access code.';
+    errEl.style.display = 'block';
+    return;
+  }
+  document.getElementById('access-code-screen').style.display = 'none';
+  document.getElementById('register-screen').style.display = 'flex';
 }
 async function doForgot() {
   const email = document.getElementById('forgot-email').value.trim().toLowerCase();
@@ -1417,6 +1435,15 @@ async function doRegister() {
     confScreen.style.display = 'none';
     bootApp();
   };
+  setTimeout(() => {
+    const content = document.getElementById('content-area');
+    if (content) {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:rgba(26,107,255,0.12);border:1px solid rgba(26,107,255,0.3);border-radius:10px;padding:16px 20px;margin-bottom:20px;font-size:.88rem;color:var(--text);line-height:1.55;';
+      banner.innerHTML = `<strong style="color:var(--blue)">Important:</strong> When booking a lesson, always use <strong style="color:var(--text)">${email}</strong> as your email so your bookings appear here automatically.`;
+      content.insertBefore(banner, content.firstChild);
+    }
+  }, 600);
 }
 
 let loginType = 'pupil';
@@ -1433,14 +1460,7 @@ async function doLogin() {
   errEl.style.display = 'none';
   btn.textContent = 'Signing in...'; btn.disabled = true;
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) {
-    if (error.message.toLowerCase().includes('email not confirmed') || error.message.toLowerCase().includes('not confirmed')) {
-      errEl.textContent = 'Please check your email and click the confirmation link before signing in.';
-    } else {
-      errEl.textContent = 'Incorrect email or password.';
-    }
-    errEl.style.display = 'block'; btn.textContent = 'Sign In'; btn.disabled = false; return;
-  }
+  if (error) { errEl.textContent = 'Incorrect email or password.'; errEl.style.display = 'block'; btn.textContent = 'Sign In'; btn.disabled = false; return; }
 
   // Check role matches selected tab
   const { data: profile } = await sb.from('profiles').select('role').eq('id', data.user.id).single();
@@ -1643,7 +1663,7 @@ function renderPupilDashboard(el, pupil) {
       <button class="btn-sm-outline" style="font-size:.78rem;padding:5px 12px;color:#86efac;border-color:rgba(34,197,94,.3)" onclick="navigate('lessons')">View →</button>
     </div>` : ''}
     <div style="background:rgba(26,107,255,0.08);border:1px solid rgba(26,107,255,0.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:.84rem;color:var(--muted);line-height:1.55">
-
+      When booking a lesson, always use <strong style="color:var(--text)">${pupil.email}</strong> so your bookings link to this account automatically.
     </div>
     <div class="next-lesson">
       <div class="next-lesson-label">Next lesson</div>
@@ -1812,18 +1832,7 @@ async function autoCompletePastBookings() {
 
 async function cancelPupilBooking(bookingId) {
   if (!confirm('Cancel this lesson? This cannot be undone.')) return;
-  const { data: booking } = await sb.from('bookings').select('*').eq('id', bookingId).single();
   await sb.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
-  // SMS to Philip
-  if (booking) {
-    const dateObj = new Date(booking.start_time);
-    triggerSMS('booking_cancelled', {
-      pupil_name: booking.invitee_name,
-      lesson_type: booking.lesson_type,
-      date: dateObj.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),
-      time: dateObj.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),
-    });
-  }
   showToast('Lesson cancelled');
   const pupil = await fetchPupil(selectedPupilId || currentProfile.pupil_id);
   await renderPupilBookings(document.getElementById('content-area'), pupil);
@@ -2094,66 +2103,33 @@ async function confirmBooking(pupilId) {
   if (!pickup) { showToast('Please enter a pickup location'); return; }
   if (!date || !time) { showToast('Please select a date and time'); return; }
 
+  // Build local datetime without timezone shift
+  const [yr, mo, dy] = date.split('-').map(Number);
+  const [hr, mn] = time.split(':').map(Number);
+  const startTime = new Date(yr, mo-1, dy, hr, mn, 0).toISOString();
+
   const btn = document.querySelector('#booking-confirm-section .btn-primary');
   btn.textContent = 'Booking...'; btn.disabled = true;
 
-  try {
-    // Build local datetime without timezone shift
-    const [yr, mo, dy] = date.split('-').map(Number);
-    const [hr, mn] = time.split(':').map(Number);
-    const startTime = new Date(yr, mo-1, dy, hr, mn, 0).toISOString();
+  const { data: profile } = await sb.from('profiles').select('name,email').eq('id', currentUser.id).single();
 
-    // Get profile — fall back to currentUser metadata if fetch fails
-    let inviteeName = currentProfile?.name || currentUser?.email || 'Pupil';
-    let inviteeEmail = currentUser?.email || '';
-    const { data: profile } = await sb.from('profiles').select('name,email').eq('id', currentUser.id).single();
-    if (profile) { inviteeName = profile.name; inviteeEmail = profile.email; }
+  const { error } = await sb.from('bookings').insert({
+    calendly_event_id: 'inapp-' + Date.now(),
+    invitee_name: profile.name,
+    invitee_email: profile.email,
+    lesson_type: lessonType,
+    start_time: startTime,
+    pickup_location: pickup,
+    status: 'active',
+    pupil_id: pupilId,
+  });
 
-    // Get pupil_id — use passed param or fall back to profile's pupil_id
-    const resolvedPupilId = pupilId || currentProfile?.pupil_id;
-    if (!resolvedPupilId) { showToast('Could not identify pupil — please refresh and try again'); btn.textContent = 'Confirm Booking'; btn.disabled = false; return; }
+  if (error) { showToast('Error — please try again'); btn.textContent = 'Confirm Booking'; btn.disabled = false; return; }
 
-    const { error } = await sb.from('bookings').insert({
-      calendly_event_id: 'inapp-' + Date.now(),
-      invitee_name: inviteeName,
-      invitee_email: inviteeEmail,
-      lesson_type: lessonType,
-      start_time: startTime,
-      pickup_location: pickup,
-      status: 'active',
-      pupil_id: resolvedPupilId,
-    });
-
-    if (error) {
-      console.error('Booking insert error:', error);
-      showToast('Error: ' + (error.message || 'Could not save booking'));
-      btn.textContent = 'Confirm Booking'; btn.disabled = false;
-      return;
-    }
-
-    // SMS notifications
-    const dateObj = new Date(yr, mo-1, dy, hr, mn, 0);
-    const dateLabel = dateObj.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
-    const { data: pupilData } = await sb.from('pupils').select('phone').eq('id', resolvedPupilId).single();
-    triggerSMS('booking_created', {
-      pupil_name: inviteeName,
-      pupil_phone: pupilData?.phone || null,
-      lesson_type: lessonType,
-      date: dateLabel,
-      time: time,
-      pickup_location: pickup,
-    });
-
-    showToast('🎉 Lesson booked!');
-    document.getElementById('booking-flow-wrap').innerHTML = '';
-    const pupil = await fetchPupil(resolvedPupilId);
-    await renderPupilBookings(document.getElementById('content-area'), pupil);
-
-  } catch(e) {
-    console.error('confirmBooking error:', e);
-    showToast('Something went wrong — please try again');
-    btn.textContent = 'Confirm Booking'; btn.disabled = false;
-  }
+  showToast('🎉 Lesson booked!');
+  document.getElementById('booking-flow-wrap').innerHTML = '';
+  const pupil = await fetchPupil(pupilId);
+  await renderPupilBookings(document.getElementById('content-area'), pupil);
 }
 
 function renderLessons(el, pupil) {
@@ -2452,7 +2428,7 @@ function renderCalendar(el) {
     </div>
     <div style="margin-top:16px;font-size:.82rem;color:var(--muted);text-align:center">
       Bookings made by pupils appear here automatically. 
-
+      <a href="https://calendly.com/pa55pgh" target="_blank" style="color:var(--blue);text-decoration:none">Open in Calendly →</a>
     </div>
   `;
 }
@@ -2624,15 +2600,6 @@ async function submitLesson(pupilId) {
   const { count } = await sb.from('lessons').select('*',{count:'exact',head:true}).eq('pupil_id',pupilId);
   const newNum = (count||0)+1;
   await sb.from('lessons').insert({ pupil_id:pupilId, lesson_num:newNum, date, duration:parseInt(dur), title, topics:checked, notes, rating:addLessonRating });
-
-  // SMS to pupil
-  const { data: pupilSMS } = await sb.from('pupils').select('phone').eq('id', pupilId).single();
-  triggerSMS('lesson_logged', {
-    pupil_phone: pupilSMS?.phone || null,
-    lesson_num: newNum,
-    date: new Date(date + 'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),
-    rating: addLessonRating,
-  });
   const updates = {};
   if (nextTopics) updates.next_lesson_topics = nextTopics;
   if (nextDate) updates.next_lesson_date = nextDate;
@@ -2940,6 +2907,7 @@ function changeDiaryWeek(offset) {
 async function renderTimeOff(el) {
   const { data: blocked } = await sb.from('blocked_dates').select('*').order('date', { ascending: true });
   const { data: avail } = await sb.from('availability').select('*').order('day_of_week');
+  const { data: codeData } = await sb.from('access_codes').select('code').eq('id', 1).single();
 
   const dayNames = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -2947,6 +2915,16 @@ async function renderTimeOff(el) {
     <div class="page-header">
       <div class="page-title">Availability & Time Off</div>
       <div class="page-sub">Manage your working hours and block dates off</div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;border-color:rgba(224,28,28,.2)">
+      <div class="card-title" style="margin-bottom:6px">Pupil Access Code</div>
+      <div style="font-size:.8rem;color:var(--muted);margin-bottom:16px">Pupils must enter this code to register. Share it after they first contact you.</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <input type="text" id="access-code-val" class="form-input" value="${codeData?.code || ''}" style="max-width:200px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:1.1rem"/>
+        <button class="btn-sm" onclick="saveAccessCode()">Update Code</button>
+        <span style="font-size:.78rem;color:var(--muted)">Current: <strong style="color:var(--red)">${codeData?.code || 'Not set'}</strong></span>
+      </div>
     </div>
 
     <div class="card" style="margin-bottom:20px">
@@ -3013,6 +2991,14 @@ async function renderTimeOff(el) {
           }).join('')}
     </div>
   `;
+}
+
+async function saveAccessCode() {
+  const code = document.getElementById('access-code-val').value.trim().toUpperCase();
+  if (!code) { showToast('Please enter a code'); return; }
+  await sb.from('access_codes').update({ code, updated_at: new Date().toISOString() }).eq('id', 1);
+  showToast('Access code updated to: ' + code);
+  await renderTimeOff(document.getElementById('content-area'));
 }
 
 async function saveAvailability(id) {
