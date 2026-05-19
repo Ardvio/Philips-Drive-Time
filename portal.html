@@ -1195,21 +1195,25 @@ if (typeof supabase === 'undefined') {
   document.body.innerHTML = '<div style="color:white;padding:40px;text-align:center;font-family:sans-serif"><h2>Connection error</h2><p style="opacity:.6;margin-top:8px">Please refresh the page.</p></div>';
 }
 
-const CALENDLY_URL = 'https://calendly.com/pa55pgh/30min';
+
 const SUPABASE_URL = 'https://lwfseimncimulusdxzwf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZnNlaW1uY2ltdWx1c2R4endmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzQ1MjYsImV4cCI6MjA5MzY1MDUyNn0.XKT6QRXch8gDs8SQImMGhqJz0Sv_iIWXLQRQT8LaKqw';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZnNlaW1uY2ltdWx1c2R4endmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODA3NDUyNiwiZXhwIjoyMDkzNjUwNTI2fQ.HiGRrtbKvhZUFweyu6-ZUblfKPrn4J5hiZdYr2Z0NG4';
+
 async function triggerSMS(type, data) {
   try {
-    await fetch(`${SUPABASE_URL}/functions/v1/send-sms`, {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/send-sms`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
       },
       body: JSON.stringify({ type, data }),
     });
+    const json = await res.json();
+    console.log('SMS result:', json);
   } catch(e) {
     console.warn('SMS trigger failed:', e);
   }
@@ -1420,7 +1424,7 @@ async function doRegister() {
     if (content) {
       const banner = document.createElement('div');
       banner.style.cssText = 'background:rgba(26,107,255,0.12);border:1px solid rgba(26,107,255,0.3);border-radius:10px;padding:16px 20px;margin-bottom:20px;font-size:.88rem;color:var(--text);line-height:1.55;';
-      banner.innerHTML = `<strong style="color:var(--blue)">Important:</strong> When booking a lesson, always use <strong style="color:var(--text)">${email}</strong> as your email so your bookings appear here automatically.`;
+      banner.innerHTML = `<strong style="color:var(--green)">Welcome!</strong> Your account is ready. Head to <strong style="color:var(--text)">My Bookings</strong> to book your first lesson.`;
       content.insertBefore(banner, content.firstChild);
     }
   }, 600);
@@ -1643,7 +1647,7 @@ function renderPupilDashboard(el, pupil) {
       <button class="btn-sm-outline" style="font-size:.78rem;padding:5px 12px;color:#86efac;border-color:rgba(34,197,94,.3)" onclick="navigate('lessons')">View →</button>
     </div>` : ''}
     <div style="background:rgba(26,107,255,0.08);border:1px solid rgba(26,107,255,0.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:.84rem;color:var(--muted);line-height:1.55">
-      When booking a lesson, always use <strong style="color:var(--text)">${pupil.email}</strong> so your bookings link to this account automatically.
+
     </div>
     <div class="next-lesson">
       <div class="next-lesson-label">Next lesson</div>
@@ -2452,7 +2456,7 @@ function renderCalendar(el) {
     </div>
     <div style="margin-top:16px;font-size:.82rem;color:var(--muted);text-align:center">
       Bookings made by pupils appear here automatically. 
-      <a href="https://calendly.com/pa55pgh" target="_blank" style="color:var(--blue);text-decoration:none">Open in Calendly →</a>
+
     </div>
   `;
 }
