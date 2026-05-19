@@ -1200,15 +1200,13 @@ const SUPABASE_URL = 'https://lwfseimncimulusdxzwf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZnNlaW1uY2ltdWx1c2R4endmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzQ1MjYsImV4cCI6MjA5MzY1MDUyNn0.XKT6QRXch8gDs8SQImMGhqJz0Sv_iIWXLQRQT8LaKqw';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZnNlaW1uY2ltdWx1c2R4endmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODA3NDUyNiwiZXhwIjoyMDkzNjUwNTI2fQ.HiGRrtbKvhZUFweyu6-ZUblfKPrn4J5hiZdYr2Z0NG4';
-
 async function triggerSMS(type, data) {
   try {
     const res = await fetch(`${SUPABASE_URL}/functions/v1/send-sms`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
       },
       body: JSON.stringify({ type, data }),
     });
