@@ -55,7 +55,7 @@ body{
 .align-center{align-items:center}
 .justify-between{justify-content:space-between}
 .text-muted{color:var(--muted)}
-.text-blue{color:var(--blue)}
+.text-blue{color:var(--red)}
 .text-green{color:var(--green)}
 .text-yellow{color:var(--yellow)}
 .text-red{color:var(--red)}
@@ -82,7 +82,7 @@ body{
   top:50%;left:50%;
   transform:translate(-50%,-50%);
   width:600px;height:600px;
-  background:radial-gradient(ellipse,rgba(26,107,255,0.1) 0%,transparent 70%);
+  background:radial-gradient(ellipse,rgba(224,28,28,0.08) 0%,transparent 70%);
   pointer-events:none;
 }
 .login-card{
@@ -105,10 +105,10 @@ body{
   align-items:center;
   gap:10px;
 }
-.login-logo span{color:var(--blue)}
+.login-logo span{color:var(--red)}
 .logo-dot{
   width:8px;height:8px;
-  background:var(--blue);
+  background:var(--red);
   border-radius:50%;
 }
 .login-title{
@@ -172,11 +172,11 @@ body{
   outline:none;
   transition:border-color .2s;
 }
-.form-input:focus{border-color:var(--blue)}
+.form-input:focus{border-color:var(--red)}
 .form-input::placeholder{color:var(--muted2)}
 .btn-primary{
   width:100%;
-  background:var(--blue);
+  background:var(--red);
   color:#fff;
   font-family:var(--sans);
   font-weight:600;
@@ -191,7 +191,7 @@ body{
 .btn-primary:hover{
   background:var(--blue2);
   transform:translateY(-1px);
-  box-shadow:0 6px 24px rgba(26,107,255,.35);
+  box-shadow:0 6px 24px rgba(224,28,28,.25);
 }
 .login-error{
   background:rgba(239,68,68,.1);
@@ -242,13 +242,13 @@ body{
   align-items:center;
   gap:8px;
 }
-.nav-brand span{color:var(--blue)}
+.nav-brand span{color:var(--red)}
 .nav-badge{
   font-size:.7rem;
   font-weight:600;
   background:var(--blue-dim);
-  color:var(--blue);
-  border:1px solid rgba(26,107,255,.25);
+  color:var(--red);
+  border:1px solid rgba(224,28,28,.18);
   padding:3px 9px;
   border-radius:100px;
   text-transform:uppercase;
@@ -275,7 +275,7 @@ body{
 .nav-avatar{
   width:34px;height:34px;
   border-radius:50%;
-  background:var(--blue);
+  background:var(--red);
   display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:.82rem;
   color:#fff;
@@ -330,7 +330,7 @@ body{
   width:100%;
 }
 .nav-item:hover{background:var(--bg3);color:var(--text)}
-.nav-item.active{background:var(--blue-dim);color:var(--blue)}
+.nav-item.active{background:var(--blue-dim);color:var(--red)}
 .nav-icon{font-size:1rem;flex-shrink:0;width:18px;text-align:center}
 
 /* ── CONTENT AREA ── */
@@ -412,7 +412,7 @@ body{
 }
 .progress-fill{
   height:100%;
-  background:var(--blue);
+  background:var(--red);
   border-radius:100px;
   transition:width .6s ease;
 }
@@ -429,13 +429,13 @@ body{
   cursor:pointer;
   transition:border-color .2s,background .2s;
 }
-.lesson-item:hover{border-color:rgba(26,107,255,.3);background:var(--bg3)}
-.lesson-item.expanded{border-color:rgba(26,107,255,.35)}
+.lesson-item:hover{border-color:rgba(224,28,28,.2);background:var(--bg3)}
+.lesson-item.expanded{border-color:rgba(224,28,28,.25)}
 .lesson-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .lesson-num{
   font-size:.72rem;
   font-weight:700;
-  color:var(--blue);
+  color:var(--red);
   text-transform:uppercase;
   letter-spacing:.08em;
 }
@@ -449,8 +449,8 @@ body{
 .lesson-topics{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
 .topic-chip{
   background:var(--blue-dim);
-  border:1px solid rgba(26,107,255,.2);
-  color:var(--blue);
+  border:1px solid rgba(224,28,28,.15);
+  color:var(--red);
   font-size:.75rem;
   font-weight:500;
   padding:4px 10px;
@@ -499,8 +499,8 @@ body{
 .video-placeholder-icon{font-size:1.8rem;opacity:.4}
 .video-upload-btn{
   background:var(--blue-dim);
-  border:1px solid rgba(26,107,255,.25);
-  color:var(--blue);
+  border:1px solid rgba(224,28,28,.18);
+  color:var(--red);
   font-family:var(--sans);
   font-size:.78rem;
   font-weight:600;
@@ -593,7 +593,7 @@ body{
   justify-content:space-between;
   margin-bottom:8px;
 }
-.message-sender{font-size:.82rem;font-weight:600;color:var(--blue)}
+.message-sender{font-size:.82rem;font-weight:600;color:var(--red)}
 .message-time{font-size:.75rem;color:var(--muted)}
 .message-body{font-size:.9rem;color:var(--text);line-height:1.65}
 .compose-area{
@@ -617,9 +617,9 @@ body{
   outline:none;
   transition:border-color .2s;
 }
-.compose-input:focus{border-color:var(--blue)}
+.compose-input:focus{border-color:var(--red)}
 .btn-send{
-  background:var(--blue);
+  background:var(--red);
   color:#fff;
   font-family:var(--sans);
   font-weight:600;
@@ -646,16 +646,16 @@ body{
   cursor:pointer;
   transition:border-color .2s,background .2s;
 }
-.pupil-row:hover{border-color:rgba(26,107,255,.3);background:var(--bg3)}
+.pupil-row:hover{border-color:rgba(224,28,28,.2);background:var(--bg3)}
 .pupil-info{display:flex;align-items:center;gap:14px}
 .pupil-avatar{
   width:38px;height:38px;
   border-radius:50%;
   background:var(--blue-dim);
-  border:1px solid rgba(26,107,255,.25);
+  border:1px solid rgba(224,28,28,.18);
   display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:.9rem;
-  color:var(--blue);
+  color:var(--red);
   flex-shrink:0;
 }
 .pupil-name{font-size:.95rem;font-weight:600;color:var(--text)}
@@ -697,8 +697,8 @@ select.form-input option{background:var(--bg2)}
   transition:background .15s,color .15s;
 }
 .topic-check:hover{background:var(--blue-dim);color:var(--text)}
-.topic-check input{accent-color:var(--blue);cursor:pointer}
-.topic-check.checked{background:var(--blue-dim);color:var(--blue)}
+.topic-check input{accent-color:var(--red);cursor:pointer}
+.topic-check.checked{background:var(--blue-dim);color:var(--red)}
 .rating-select{display:flex;gap:6px;margin-top:4px}
 .rating-star{
   font-size:1.4rem;
@@ -708,7 +708,7 @@ select.form-input option{background:var(--bg2)}
 }
 .rating-star.active{color:var(--yellow)}
 .btn-sm{
-  background:var(--blue);
+  background:var(--red);
   color:#fff;
   font-family:var(--sans);
   font-weight:600;
@@ -736,8 +736,8 @@ select.form-input option{background:var(--bg2)}
 
 /* ── GDL COUNTDOWN (in dashboard) ── */
 .gdl-bar{
-  background:linear-gradient(135deg,rgba(26,107,255,.15),rgba(26,107,255,.06));
-  border:1px solid rgba(26,107,255,.25);
+  background:linear-gradient(135deg,rgba(224,28,28,.1),rgba(26,107,255,.06));
+  border:1px solid rgba(224,28,28,.18);
   border-radius:var(--radius);
   padding:18px 22px;
   display:flex;
@@ -754,13 +754,13 @@ select.form-input option{background:var(--bg2)}
 .gdl-val{
   font-size:1.3rem;
   font-weight:700;
-  color:var(--blue);
+  color:var(--red);
   letter-spacing:-0.02em;
   line-height:1;
 }
 .gdl-unit-label{font-size:.65rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
 .gdl-book{
-  background:var(--blue);
+  background:var(--red);
   color:#fff;
   font-family:var(--sans);
   font-weight:600;
@@ -924,9 +924,9 @@ select.form-input option{background:var(--bg2)}
   text-decoration:none;
   transition:border-color .2s,background .2s;
 }
-.booking-quick:hover{border-color:rgba(26,107,255,.3);background:var(--bg2)}
+.booking-quick:hover{border-color:rgba(224,28,28,.2);background:var(--bg2)}
 .msg-badge{
-  background:var(--blue);
+  background:var(--red);
   color:#fff;
   font-size:.6rem;
   font-weight:700;
@@ -944,7 +944,7 @@ select.form-input option{background:var(--bg2)}
 .book-dropdown-nav{position:relative}
 .book-nav-menu{
   display:none;position:absolute;top:calc(100% + 8px);right:0;
-  background:#0a1424;border:1px solid rgba(26,107,255,0.25);
+  background:#0a1424;border:1px solid rgba(224,28,28,0.18);
   border-radius:10px;padding:6px;min-width:200px;z-index:200;
   box-shadow:0 16px 48px rgba(0,0,0,.4);
 }
@@ -953,7 +953,7 @@ select.form-input option{background:var(--bg2)}
   display:block;padding:10px 12px;border-radius:7px;
   text-decoration:none;transition:background .15s;
 }
-.book-nav-option:hover{background:rgba(26,107,255,0.1)}
+.book-nav-option:hover{background:rgba(224,28,28,0.08)}
 
 /* ── SYLLABUS ACCORDION ── */
 .syllabus-accordion{margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
@@ -1025,7 +1025,7 @@ select.form-input option{background:var(--bg2)}
     </div>
 
     <div style="margin-top:12px;text-align:center;font-size:.84rem;color:var(--muted)">
-      New pupil? <button onclick="showRegister()" style="background:none;border:none;color:var(--blue);font-family:var(--sans);font-size:.84rem;font-weight:600;cursor:pointer;padding:0">Create an account</button>
+      New pupil? <button onclick="showRegister()" style="background:none;border:none;color:var(--red);font-family:var(--sans);font-size:.84rem;font-weight:600;cursor:pointer;padding:0">Create an account</button>
     </div>
   </div>
   <a href="index.html" class="back-link">
@@ -1051,7 +1051,7 @@ select.form-input option{background:var(--bg2)}
       Reset link sent — check your email.
     </div>
     <div style="margin-top:20px;text-align:center;font-size:.84rem;color:var(--muted)">
-      <button onclick="showLogin()" style="background:none;border:none;color:var(--blue);font-family:var(--sans);font-size:.84rem;font-weight:600;cursor:pointer;padding:0">Back to sign in</button>
+      <button onclick="showLogin()" style="background:none;border:none;color:var(--red);font-family:var(--sans);font-size:.84rem;font-weight:600;cursor:pointer;padding:0">Back to sign in</button>
     </div>
   </div>
 </div>
@@ -1089,11 +1089,11 @@ select.form-input option{background:var(--bg2)}
     <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
       <div class="form-group" style="margin-bottom:0">
         <label class="form-label">First name</label>
-        <input class="form-input" id="reg-first" type="text" placeholder="Aoife"/>
+        <input class="form-input" id="reg-first" type="text" placeholder="Forename"/>
       </div>
       <div class="form-group" style="margin-bottom:0">
         <label class="form-label">Last name</label>
-        <input class="form-input" id="reg-last" type="text" placeholder="Murphy"/>
+        <input class="form-input" id="reg-last" type="text" placeholder="Surname"/>
       </div>
     </div>
     <div class="form-group">
@@ -1125,7 +1125,7 @@ select.form-input option{background:var(--bg2)}
     <div class="login-error" id="reg-error"></div>
 
     <div style="margin-top:20px;text-align:center;font-size:.84rem;color:var(--muted)">
-      Already have an account? <button onclick="showLogin()" style="background:none;border:none;color:var(--blue);font-family:var(--sans);font-size:.84rem;font-weight:600;cursor:pointer;padding:0">Sign in</button>
+      Already have an account? <button onclick="showLogin()" style="background:none;border:none;color:var(--red);font-family:var(--sans);font-size:.84rem;font-weight:600;cursor:pointer;padding:0">Sign in</button>
     </div>
   </div>
   <a href="index.html" class="back-link">
@@ -1174,15 +1174,8 @@ select.form-input option{background:var(--bg2)}
     <div style="font-size:2.5rem;margin-bottom:16px">🎉</div>
     <div class="login-logo"><div class="logo-dot"></div>Philip's <span>Drive Time</span></div>
     <div class="login-title" style="margin-top:16px">Welcome, <span id="conf-name"></span>!</div>
-    <p class="login-sub">Your account has been created successfully.</p>
-    <div style="background:rgba(224,28,28,0.08);border:1px solid rgba(224,28,28,0.2);border-radius:10px;padding:16px 20px;margin:20px 0;text-align:left">
-      <div style="font-size:.78rem;color:var(--red);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px">⚠️ Action required</div>
-      <p style="font-size:.88rem;color:var(--text);line-height:1.6;margin:0">A confirmation email has been sent to:</p>
-      <div style="font-size:.95rem;font-weight:700;color:var(--text);margin:8px 0;word-break:break-all" id="conf-email"></div>
-      <p style="font-size:.84rem;color:var(--muted);line-height:1.5;margin:0">Please click the link in the email to verify your account. <strong style="color:var(--text)">Check your spam/junk folder</strong> if you don't see it within a few minutes.</p>
-    </div>
-    <button class="btn-primary" id="conf-proceed" style="width:100%">I've confirmed my email →</button>
-    <p style="font-size:.78rem;color:var(--muted);margin-top:12px">Didn't get it? Check spam or contact Philip.</p>
+    <p class="login-sub" style="margin-bottom:24px">Your account has been created. You're all set.</p>
+    <button class="btn-primary" id="conf-proceed" style="width:100%">Go to my dashboard →</button>
   </div>
 </div>
 
@@ -1436,7 +1429,6 @@ async function doRegister() {
   const confScreen = document.getElementById('confirm-screen');
   confScreen.style.display = 'flex';
   document.getElementById('conf-name').textContent = first;
-  document.getElementById('conf-email').textContent = email;
   document.getElementById('conf-proceed').onclick = () => {
     confScreen.style.display = 'none';
     bootApp();
@@ -1446,7 +1438,7 @@ async function doRegister() {
 let loginType = 'pupil';
 function setLoginType(t) {
   loginType = t;
-  document.querySelectorAll('.login-tab').forEach((b,i) => b.classList.toggle('active', ['pupil','parent','instructor'][i] === t));
+  document.querySelectorAll('.login-tab').forEach((b,i) => b.classList.toggle('active', ['pupil','instructor'][i] === t));
 }
 
 async function doLogin() {
@@ -2173,7 +2165,7 @@ async function renderSyllabus(el, pupil) {
       return `
         <div style="margin-bottom:24px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
-            <div style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue)">${cat.category}</div>
+            <div style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--red)">${cat.category}</div>
             <div style="font-size:.75rem;color:${headColour}">${catConf}/${cat.skills.length} confident</div>
           </div>
           ${cat.skills.map(sk => {
@@ -2374,7 +2366,7 @@ function bookingCard(b, isPast = false) {
   const timeStr = date.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
   const typeColour = b.lesson_type === 'Saturday Lesson' ? 'var(--yellow)' : b.lesson_type === 'Test' ? 'var(--green)' : 'var(--blue)';
   const nameEl = b.pupil_id
-    ? `<div style="font-size:.95rem;font-weight:600;color:var(--blue);cursor:pointer;text-decoration:underline" onclick="openPupil('${b.pupil_id}')">${b.invitee_name}</div>`
+    ? `<div style="font-size:.95rem;font-weight:600;color:var(--red);cursor:pointer;text-decoration:underline" onclick="openPupil('${b.pupil_id}')">${b.invitee_name}</div>`
     : `<div style="font-size:.95rem;font-weight:600;color:var(--text)">${b.invitee_name}</div>`;
 
   return `
@@ -2422,7 +2414,7 @@ function renderCalendar(el) {
     </div>
     <div style="margin-top:16px;font-size:.82rem;color:var(--muted);text-align:center">
       Bookings made by pupils appear here automatically. 
-      <a href="https://calendly.com/pa55pgh" target="_blank" style="color:var(--blue);text-decoration:none">Open in Calendly →</a>
+      <a href="https://calendly.com/pa55pgh" target="_blank" style="color:var(--red);text-decoration:none">Open in Calendly →</a>
     </div>
   `;
 }
