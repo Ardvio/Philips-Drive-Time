@@ -31,8 +31,8 @@ html{scroll-behavior:smooth}
   --border:   rgba(255,255,255,0.08);
   --border2:  rgba(255,255,255,0.06);
   --text:     rgba(255,255,255,0.92);
-  --muted:    rgba(255,255,255,0.45);
-  --muted2:   rgba(255,255,255,0.22);
+  --muted:    rgba(255,255,255,0.75);
+  --muted2:   rgba(255,255,255,0.45);
   --green:    #22c55e;
   --yellow:   #f59e0b;
   --sans:     'Outfit', sans-serif;
@@ -1199,6 +1199,18 @@ select.form-input option{background:var(--bg2)}
   </div>
 </div>
 
+<!-- MORE MENU -->
+<div id="more-menu-overlay" onclick="hideMoreMenu()" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.5)"></div>
+<div id="more-menu" style="display:none;position:fixed;bottom:70px;left:8px;right:8px;z-index:1000;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;">
+  <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">More</div>
+  <button onclick="hideMoreMenu();navigate('timeoff')" style="display:flex;align-items:center;gap:14px;width:100%;background:transparent;border:none;color:var(--text);font-family:var(--sans);font-size:.95rem;font-weight:600;padding:14px 12px;border-radius:10px;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent">
+    🗓 Time Off
+  </button>
+  <button onclick="hideMoreMenu();navigate('finances')" style="display:flex;align-items:center;gap:14px;width:100%;background:transparent;border:none;color:var(--text);font-family:var(--sans);font-size:.95rem;font-weight:600;padding:14px 12px;border-radius:10px;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent">
+    💰 Finances
+  </button>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -1542,7 +1554,7 @@ function renderSidebar() {
   // Bottom nav (mobile)
   const bnItems = currentRole === 'instructor' ? instructorItems : pupilItems;
   document.getElementById('bottom-nav-inner').innerHTML = bnItems.map(i =>
-    `<button class="bn-item${i.id===currentView?' active':''}" onclick="navigate('${i.id}')">
+    `<button class="bn-item${i.id===currentView?' active':''}" onclick="${i.id==='finances' ? 'showMoreMenu()' : `navigate('${i.id}')`}">
       <span class="bn-badge${i.id==='messages'?' show':''}" id="bn-msg-badge-${i.id}"></span>
       <div class="bn-icon-wrap">${i.bnIcon}</div>
       <span class="bn-label">${i.label}</span>
@@ -3160,6 +3172,14 @@ function copyShareLink() {
 function stars(n) { return [1,2,3,4,5].map(i=>`<span class="star${i<=n?' filled':''}">★</span>`).join(''); }
 function statusLabel(s) { return s==='confident'?'Confident':s==='in-progress'?'In Progress':'Not Started'; }
 function formatDate(d) { return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}); }
+function showMoreMenu() {
+  document.getElementById('more-menu').style.display = 'block';
+  document.getElementById('more-menu-overlay').style.display = 'block';
+}
+function hideMoreMenu() {
+  document.getElementById('more-menu').style.display = 'none';
+  document.getElementById('more-menu-overlay').style.display = 'none';
+}
 function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
 document.getElementById('login-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
