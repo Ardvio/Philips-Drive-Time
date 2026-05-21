@@ -203,7 +203,7 @@ body{
   margin-top:12px;
   display:none;
 }
-.legal-footer{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:center;padding:20px 24px;font-size:.75rem;color:var(--muted);border-top:1px solid var(--border);}
+.legal-footer{display:none;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:center;padding:20px 24px;font-size:.75rem;color:var(--muted);border-top:1px solid var(--border);}
 .legal-footer a{color:var(--muted);text-decoration:none;}.legal-footer a:hover{color:var(--text);}
 .legal-footer span{color:var(--muted2);}
 
@@ -1372,16 +1372,19 @@ async function loadProfileAndBoot() {
 function showRegister() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('access-code-screen').style.display = 'flex';
+  document.querySelector('.legal-footer').style.display = 'none';
 }
 function showForgot() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('forgot-screen').style.display = 'flex';
+  document.querySelector('.legal-footer').style.display = 'none';
 }
 function showLogin() {
   document.getElementById('register-screen').style.display = 'none';
   document.getElementById('forgot-screen').style.display = 'none';
   document.getElementById('access-code-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
+  document.querySelector('.legal-footer').style.display = 'none';
 }
 
 async function checkAccessCode() {
@@ -1504,6 +1507,7 @@ function bootApp() {
   document.getElementById('register-screen').style.display = 'none';
   const app = document.getElementById('app');
   app.style.display = 'flex';
+  document.querySelector('.legal-footer').style.display = 'flex';
   document.getElementById('user-avatar').textContent = (currentProfile?.name || 'U').split(' ').map(n=>n[0]).join('');
   renderSidebar(); navigate('dashboard');
 }
