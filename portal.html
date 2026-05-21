@@ -203,7 +203,10 @@ body{
   margin-top:12px;
   display:none;
 }
-.back-link{
+.legal-footer{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:center;padding:20px 24px;font-size:.75rem;color:var(--muted);border-top:1px solid var(--border);}
+.legal-footer a{color:var(--muted);text-decoration:none;}.legal-footer a:hover{color:var(--text);}
+.legal-footer span{color:var(--muted2);}
+
   display:inline-flex;
   align-items:center;
   gap:6px;
@@ -1121,6 +1124,13 @@ select.form-input option{background:var(--bg2)}
       <input class="form-input" id="reg-parent" type="email" placeholder="mum@email.com"/>
     </div>
 
+    <div class="form-group" style="margin-bottom:8px;">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:.84rem;color:var(--muted);line-height:1.5;font-family:var(--sans);">
+        <input type="checkbox" id="reg-consent" style="width:16px;height:16px;margin-top:2px;accent-color:var(--red);cursor:pointer;flex-shrink:0;"/>
+        <span>I have read and agree to the <a href="/terms" target="_blank" style="color:var(--red);text-decoration:underline;">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" style="color:var(--red);text-decoration:underline;">Privacy Policy</a></span>
+      </label>
+    </div>
+
     <button class="btn-primary" onclick="doRegister()">Create Account</button>
     <div class="login-error" id="reg-error"></div>
 
@@ -1214,7 +1224,7 @@ select.form-input option{background:var(--bg2)}
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 // Safety check - if Supabase didn't load, show error
 if (typeof supabase === 'undefined') {
@@ -1416,6 +1426,7 @@ async function doRegister() {
   const btn = document.querySelector('#register-screen .btn-primary');
   errEl.style.display = 'none';
   if (!first || !last || !email || !password) { errEl.textContent = 'Please fill in all required fields.'; errEl.style.display = 'block'; return; }
+  if (!document.getElementById('reg-consent').checked) { errEl.textContent = 'You must agree to the Terms & Conditions and Privacy Policy to register.'; errEl.style.display = 'block'; return; }
   if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display = 'block'; return; }
   if (password !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; return; }
   btn.textContent = 'Creating account...'; btn.disabled = true;
@@ -1429,6 +1440,7 @@ async function doRegister() {
   const userId = authData.user.id;
   const { data: pupil } = await sb.from('pupils').insert({ name, email, phone, license_number: license, start_date: new Date().toISOString().split('T')[0], next_lesson_date: 'Not yet scheduled', next_lesson_topics: 'To be confirmed' }).select().single();
   await sb.from('profiles').insert({ id: userId, name, email, phone, license_number: license, role: 'pupil', pupil_id: pupil.id });
+  await sb.from('profiles').update({ terms_agreed: true, terms_agreed_at: new Date().toISOString(), terms_version: '2026-05-22' }).eq('id', userId);
   await sb.from('skills').insert(ALL_TOPICS.map(skill => ({ pupil_id: pupil.id, skill_name: skill, status: 'not-started' })));
   await sb.from('messages').insert({ pupil_id: pupil.id, sender_name: 'Philip', sender_role: 'instructor', body: `Welcome ${first}! I can see you've created your account. Get in touch to book your first lesson and we'll get started.` });
   currentUser = authData.user;
@@ -3191,5 +3203,16 @@ function showToast(msg) { const t=document.getElementById('toast'); t.textConten
 
 document.getElementById('login-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 </script>
+<footer class="legal-footer">
+  <a href="/privacy" target="_blank">Privacy Policy</a>
+  <span>·</span>
+  <a href="/terms" target="_blank">Terms &amp; Conditions</a>
+  <span>·</span>
+  <a href="/cookies" target="_blank">Cookie Notice</a>
+  <span>·</span>
+  <span>ICO Reg: C1925568</span>
+  <span>·</span>
+  <span>Powered by <a href="https://ardvio.com" target="_blank" style="color:var(--muted);">Ardvio</a></span>
+</footer>
 </body>
 </html>
