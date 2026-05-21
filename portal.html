@@ -2409,6 +2409,13 @@ function bookingCard(b, isPast = false) {
           </div>
         </div>
       </div>
+      ${!isPast && b.status === 'active' ? `
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap">
+          ${b.pupil_id ? `<button class="btn-sm" onclick="openPupil('${b.pupil_id}')">View Profile</button>` : ''}
+          <button class="btn-sm-outline" style="color:#f97316;border-color:rgba(249,115,22,.3)" onclick="markNoShow('${b.id}')">No Show</button>
+          <button class="btn-sm-outline" style="color:var(--red);border-color:rgba(224,28,28,.3)" onclick="cancelBooking('${b.id}')">Cancel Lesson</button>
+        </div>
+      ` : ''}
     </div>
   `;
 }
