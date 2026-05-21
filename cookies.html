@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cookie Notice — Philip's Drive Time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1f1f1f;--red:#e01c1c;--border:rgba(255,255,255,0.08);--text:rgba(255,255,255,0.92);--muted:rgba(255,255,255,0.75);--muted2:rgba(255,255,255,0.45);--sans:"Outfit",sans-serif;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+a{color:var(--red);text-decoration:none;}a:hover{text-decoration:underline;}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.topbar-brand{font-size:1.05rem;font-weight:700;color:var(--text);letter-spacing:-.5px;}
+.topbar-brand span{color:var(--red);}
+.topbar-back{font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.content{max-width:720px;width:100%;margin:0 auto;padding:48px 24px 80px;}
+.page-title{font-size:1.9rem;font-weight:700;margin-bottom:6px;}
+.page-meta{font-size:.82rem;color:var(--muted2);margin-bottom:36px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+h2{font-size:1rem;font-weight:600;color:var(--text);margin:32px 0 10px;}
+p{font-size:.9rem;color:var(--muted);line-height:1.8;margin-bottom:12px;}
+ul{list-style:none;margin:0 0 14px 0;padding:0;}
+ul li{font-size:.9rem;color:var(--muted);line-height:1.8;padding:2px 0 2px 18px;position:relative;}
+ul li::before{content:"–";position:absolute;left:0;color:var(--red);font-weight:600;}
+.chip{display:inline-block;background:rgba(224,28,28,0.1);border:1px solid rgba(224,28,28,0.25);color:rgba(255,255,255,0.7);font-size:.75rem;padding:3px 10px;border-radius:20px;margin-bottom:6px;}
+.footer-legal{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:center;padding:20px 24px;font-size:.75rem;color:var(--muted2);border-top:1px solid var(--border);margin-top:auto;}
+.footer-legal a{color:var(--muted2);}
+.footer-legal a:hover{color:var(--text);}
+.footer-legal span{opacity:.4;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-brand">Philip's Drive Time<span>.</span></span>
+  <a href="/portal.html" class="topbar-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to portal
+  </a>
+</div>
+
+<div class="content">
+  <p class="page-meta">Last updated: 22 May 2026 &nbsp;·&nbsp; UK PECR Compliant</p>
+  <h1 class="page-title">Cookie Notice</h1>
+  <p style="margin-top:16px;">This Cookie Notice explains how Philip's Drive Time uses cookies when you use our platform.</p>
+
+  <h2>What Are Cookies?</h2>
+  <p>Cookies are small text files stored on your device when you visit a website. They help the site remember information about your visit, such as whether you are logged in.</p>
+
+  <h2>Cookies We Use</h2>
+  <p>Philip's Drive Time uses <strong style="color:var(--text);">essential cookies only</strong>. We do not use tracking cookies, advertising cookies, or analytics cookies of any kind.</p>
+
+  <div style="margin:20px 0;padding:20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;">
+    <p style="margin-bottom:8px;"><span class="chip">Essential</span></p>
+    <p style="margin-bottom:6px;"><strong style="color:var(--text);">Authentication token</strong></p>
+    <p style="margin-bottom:12px;">Set by Supabase to keep you securely logged in during your session. Expires when you log out or after your session ends.</p>
+    <p style="margin-bottom:6px;"><strong style="color:var(--text);">Session identifier</strong></p>
+    <p>Used to maintain your secure connection to the platform. Deleted when you close your browser.</p>
+  </div>
+
+  <p>These cookies are strictly necessary. The platform cannot function without them and they cannot be disabled without logging out of the service entirely.</p>
+
+  <h2>Cookies We Do Not Use</h2>
+  <ul>
+    <li>Google Analytics or any analytics cookies</li>
+    <li>Facebook Pixel or any advertising cookies</li>
+    <li>Third-party tracking or retargeting cookies</li>
+    <li>Social media cookies</li>
+  </ul>
+
+  <h2>Your Choices</h2>
+  <p>Because we only use essential cookies, no cookie consent banner is required — essential cookies do not require consent under UK PECR.</p>
+  <p>You can control cookies through your browser settings. However, blocking essential cookies will prevent you from logging in to Philip's Drive Time.</p>
+
+  <h2>Contact</h2>
+  <p>Questions about our use of cookies: <a href="mailto:contact@ardvio.com">contact@ardvio.com</a></p>
+</div>
+
+<footer class="footer-legal">
+  <a href="/privacy">Privacy Policy</a>
+  <span>·</span>
+  <a href="/terms">Terms &amp; Conditions</a>
+  <span>·</span>
+  <a href="/cookies">Cookie Notice</a>
+  <span>·</span>
+  <span>Powered by <a href="https://ardvio.com" target="_blank">Ardvio</a></span>
+</footer>
+
+</body>
+</html>
