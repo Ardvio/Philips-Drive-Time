@@ -203,7 +203,7 @@ body{
   margin-top:12px;
   display:none;
 }
-.legal-footer{display:none;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:center;padding:20px 24px;font-size:.75rem;color:var(--muted);border-top:1px solid var(--border);}
+.legal-footer{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:center;padding:20px 24px;font-size:.75rem;color:var(--muted);border-top:1px solid var(--border);}
 .legal-footer a{color:var(--muted);text-decoration:none;}.legal-footer a:hover{color:var(--text);}
 .legal-footer span{color:var(--muted2);}
 
@@ -1372,19 +1372,16 @@ async function loadProfileAndBoot() {
 function showRegister() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('access-code-screen').style.display = 'flex';
-  document.querySelector('.legal-footer').style.display = 'none';
 }
 function showForgot() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('forgot-screen').style.display = 'flex';
-  document.querySelector('.legal-footer').style.display = 'none';
 }
 function showLogin() {
   document.getElementById('register-screen').style.display = 'none';
   document.getElementById('forgot-screen').style.display = 'none';
   document.getElementById('access-code-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
-  document.querySelector('.legal-footer').style.display = 'none';
 }
 
 async function checkAccessCode() {
@@ -1507,7 +1504,6 @@ function bootApp() {
   document.getElementById('register-screen').style.display = 'none';
   const app = document.getElementById('app');
   app.style.display = 'flex';
-  document.querySelector('.legal-footer').style.display = 'flex';
   document.getElementById('user-avatar').textContent = (currentProfile?.name || 'U').split(' ').map(n=>n[0]).join('');
   renderSidebar(); navigate('dashboard');
 }
@@ -2156,7 +2152,7 @@ function lessonCard(l) {
     <div class="lesson-body">
       <div class="lesson-topics">${(l.topics||[]).map(t=>`<span class="topic-chip">${t}</span>`).join('')}</div>
       <div class="lesson-notes"><strong>Philip's notes</strong>${l.notes||''}</div>
-      <div class="video-slot${l.video?' has-video':''}">${l.video?`<video controls src="${l.video}"></video>`:`<div class="video-placeholder"><div class="video-placeholder-icon">▶</div><div>No video for this lesson yet</div></div>`}</div>
+      <div class="video-slot${l.video?' has-video':''}">${l.video?`<video controls playsinline webkit-playsinline src="${l.video}"></video>`:`<div class="video-placeholder"><div class="video-placeholder-icon">▶</div><div>No video for this lesson yet</div></div>`}</div>
     </div>
   </div>`;
 }
@@ -2230,11 +2226,13 @@ function youtubeEmbed(url) {
   const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
   if (!match) return '';
   const id = match[1];
-  return `<div class="accordion-video has-video" style="border-style:solid;border-color:var(--border);padding:0;border-radius:8px;overflow:hidden;margin-bottom:8px">
-    <iframe width="100%" height="220" src="https://www.youtube.com/embed/${id}" 
+  return `<div class="accordion-video has-video" style="border-style:solid;border-color:var(--border);padding:0;border-radius:8px;overflow:hidden;margin-bottom:8px;position:relative">
+    <iframe width="100%" height="220" src="https://www.youtube.com/embed/${id}?playsinline=1&rel=0" 
       title="Video" frameborder="0" 
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-      allowfullscreen style="display:block"></iframe>
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
+      allowfullscreen webkitallowfullscreen mozallowfullscreen
+      referrerpolicy="strict-origin-when-cross-origin"
+      style="display:block;touch-action:manipulation"></iframe>
   </div>`;
 }
 
@@ -3213,6 +3211,8 @@ document.getElementById('login-password').addEventListener('keydown', e => { if(
   <a href="/terms" target="_blank">Terms &amp; Conditions</a>
   <span>·</span>
   <a href="/cookies" target="_blank">Cookie Notice</a>
+  <span>·</span>
+  <span>ICO Reg: C1925568</span>
   <span>·</span>
   <span>Powered by <a href="https://ardvio.com" target="_blank" style="color:var(--muted);">Ardvio</a></span>
 </footer>
