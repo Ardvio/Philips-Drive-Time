@@ -30,9 +30,9 @@ html{scroll-behavior:smooth}
   --blue-dim: rgba(224,28,28,0.12);
   --border:   rgba(255,255,255,0.08);
   --border2:  rgba(255,255,255,0.06);
-  --text:     rgba(255,255,255,0.92);
-  --muted:    rgba(255,255,255,0.75);
-  --muted2:   rgba(255,255,255,0.45);
+  --text:     rgba(255,255,255,0.95);
+  --muted:    rgba(255,255,255,0.88);
+  --muted2:   rgba(255,255,255,0.60);
   --green:    #22c55e;
   --yellow:   #f59e0b;
   --sans:     'Outfit', sans-serif;
@@ -1020,6 +1020,13 @@ select.form-input option{background:var(--bg2)}
       <label class="form-label">Password</label>
       <input class="form-input" id="login-password" type="password" placeholder="••••••••"/>
     </div>
+    <div style="display:flex;align-items:center;gap:10px;margin:4px 0 16px">
+      <input type="checkbox" id="stay-logged-in" checked
+        style="width:16px;height:16px;accent-color:var(--red);cursor:pointer;flex-shrink:0;"/>
+      <label for="stay-logged-in" style="font-size:.84rem;color:var(--muted);cursor:pointer;user-select:none">
+        Stay logged in
+      </label>
+    </div>
     <button class="btn-primary" onclick="doLogin()">Sign In</button>
     <div class="login-error" id="login-error">Incorrect email or password.</div>
 
@@ -1234,7 +1241,14 @@ if (typeof supabase === 'undefined') {
 const CALENDLY_URL = 'https://calendly.com/pa55pgh/30min';
 const SUPABASE_URL = 'https://lwfseimncimulusdxzwf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZnNlaW1uY2ltdWx1c2R4endmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzQ1MjYsImV4cCI6MjA5MzY1MDUyNn0.XKT6QRXch8gDs8SQImMGhqJz0Sv_iIWXLQRQT8LaKqw';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storage: window.localStorage
+  }
+});
 
 const NI_SYLLABUS = [
   { category:'Safety & Vehicle Checks', skills:[
@@ -1472,8 +1486,17 @@ async function doLogin() {
   const btn = document.querySelector('#login-screen .btn-primary');
   errEl.style.display = 'none';
   btn.textContent = 'Signing in...'; btn.disabled = true;
+  const stayLoggedIn = document.getElementById('stay-logged-in')?.checked !== false;
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
   if (error) { errEl.textContent = 'Incorrect email or password.'; errEl.style.display = 'block'; btn.textContent = 'Sign In'; btn.disabled = false; return; }
+  // If they don't want to stay logged in, clear the persisted session immediately
+  // so closing the tab/browser logs them out. The in-memory session still works for this tab.
+  if (!stayLoggedIn) {
+    await sb.auth.signOut({ scope: 'local' }); // removes from localStorage only, keeps memory session
+    sessionStorage.setItem('pdt-user-id', data.user.id); // track that we have a temp session
+  } else {
+    sessionStorage.removeItem('pdt-user-id');
+  }
 
   // Check role matches selected tab
   const { data: profile } = await sb.from('profiles').select('role').eq('id', data.user.id).single();
@@ -1494,6 +1517,7 @@ async function doLogin() {
 
 async function logout() {
   await sb.auth.signOut();
+  sessionStorage.removeItem('pdt-user-id');
   currentUser = null; currentRole = null; currentProfile = null; currentView = 'dashboard';
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
@@ -2227,12 +2251,23 @@ function youtubeEmbed(url) {
   if (!match) return '';
   const id = match[1];
   return `<div class="accordion-video has-video" style="border-style:solid;border-color:var(--border);padding:0;border-radius:8px;overflow:hidden;margin-bottom:8px;position:relative">
-    <iframe width="100%" height="220" src="https://www.youtube.com/embed/${id}?playsinline=1&rel=0" 
-      title="Video" frameborder="0" 
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
-      allowfullscreen webkitallowfullscreen mozallowfullscreen
-      referrerpolicy="strict-origin-when-cross-origin"
-      style="display:block;touch-action:manipulation"></iframe>
+    <div style="position:relative;width:100%;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe 
+        style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;border:0"
+        src="https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0&modestbranding=1&enablejsapi=1" 
+        title="Driving lesson video"
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
+        allowfullscreen webkitallowfullscreen mozallowfullscreen
+        referrerpolicy="no-referrer-when-downgrade"
+        loading="lazy"
+        sandbox="allow-scripts allow-same-origin allow-presentation allow-popups">
+      </iframe>
+    </div>
+    <a href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener" 
+      style="display:block;text-align:center;padding:8px;font-size:.75rem;color:var(--muted2);text-decoration:none">
+      ↗ Open on YouTube if video doesn't load
+    </a>
   </div>`;
 }
 
