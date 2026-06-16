@@ -8,9 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1f1f1f;--red:#e01c1c;--border:rgba(255,255,255,0.08);--text:rgba(255,255,255,0.92);--muted:rgba(255,255,255,0.75);--muted2:rgba(255,255,255,0.45);--sans:"Outfit",sans-serif;}
+:root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1f1f1f;--red:#ffffff;--border:rgba(255,255,255,0.08);--text:rgba(255,255,255,0.92);--muted:rgba(255,255,255,0.85);--muted2:rgba(255,255,255,0.65);--sans:"Outfit",sans-serif;}
 body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
-a{color:var(--red);text-decoration:none;}a:hover{text-decoration:underline;}
+a{color:var(--red);text-decoration:underline;}a:hover{opacity:0.75;}
 .topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 .topbar-brand{font-size:1.05rem;font-weight:700;color:var(--text);letter-spacing:-.5px;}
 .topbar-brand span{color:var(--red);}
@@ -23,7 +23,7 @@ p{font-size:.9rem;color:var(--muted);line-height:1.8;margin-bottom:12px;}
 ul{list-style:none;margin:0 0 14px 0;padding:0;}
 ul li{font-size:.9rem;color:var(--muted);line-height:1.8;padding:2px 0 2px 18px;position:relative;}
 ul li::before{content:"–";position:absolute;left:0;color:var(--red);font-weight:600;}
-.chip{display:inline-block;background:rgba(224,28,28,0.1);border:1px solid rgba(224,28,28,0.25);color:rgba(255,255,255,0.7);font-size:.75rem;padding:3px 10px;border-radius:20px;margin-bottom:6px;}
+.chip{display:inline-block;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.9);font-size:.75rem;padding:3px 10px;border-radius:20px;margin-bottom:6px;}
 .footer-legal{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:center;padding:20px 24px;font-size:.75rem;color:var(--muted2);border-top:1px solid var(--border);margin-top:auto;}
 .footer-legal a{color:var(--muted2);}
 .footer-legal a:hover{color:var(--text);}

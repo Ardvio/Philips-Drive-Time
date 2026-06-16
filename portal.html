@@ -22,12 +22,12 @@ html{scroll-behavior:smooth}
   --bg:       #0d0d0d;
   --bg2:      #161616;
   --bg3:      #1f1f1f;
-  --red:      #e01c1c;
-  --red2:     #b81515;
-  --red-dim:  rgba(224,28,28,0.12);
-  --blue:     #e01c1c;
-  --blue2:    #b81515;
-  --blue-dim: rgba(224,28,28,0.12);
+  --red:      #ffffff;
+  --red2:     #cccccc;
+  --red-dim:  rgba(255,255,255,0.08);
+  --blue:     #ffffff;
+  --blue2:    #cccccc;
+  --blue-dim: rgba(255,255,255,0.08);
   --border:   rgba(255,255,255,0.08);
   --border2:  rgba(255,255,255,0.06);
   --text:     rgba(255,255,255,0.95);
@@ -82,7 +82,7 @@ body{
   top:50%;left:50%;
   transform:translate(-50%,-50%);
   width:600px;height:600px;
-  background:radial-gradient(ellipse,rgba(224,28,28,0.08) 0%,transparent 70%);
+  background:radial-gradient(ellipse,rgba(255,255,255,0.04) 0%,transparent 70%);
   pointer-events:none;
 }
 .login-card{
@@ -147,7 +147,7 @@ body{
 }
 .login-tab.active{
   background:var(--red) !important;
-  color:#fff !important;
+  color:#0d0d0d !important;
   border-color:var(--red) !important;
 }
 .form-group{margin-bottom:16px}
@@ -177,7 +177,7 @@ body{
 .btn-primary{
   width:100%;
   background:var(--red);
-  color:#fff;
+  color:#0d0d0d;
   font-family:var(--sans);
   font-weight:600;
   font-size:.95rem;
@@ -191,7 +191,7 @@ body{
 .btn-primary:hover{
   background:var(--blue2);
   transform:translateY(-1px);
-  box-shadow:0 6px 24px rgba(224,28,28,.25);
+  box-shadow:none;
 }
 .login-error{
   background:rgba(239,68,68,.1);
@@ -251,7 +251,7 @@ body{
   font-weight:600;
   background:var(--blue-dim);
   color:var(--red);
-  border:1px solid rgba(224,28,28,.18);
+  border:1px solid rgba(255,255,255,0.10);
   padding:3px 9px;
   border-radius:100px;
   text-transform:uppercase;
@@ -278,7 +278,7 @@ body{
 .nav-avatar{
   width:34px;height:34px;
   border-radius:50%;
-  background:var(--red);
+  background:rgba(255,255,255,0.15);
   display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:.82rem;
   color:#fff;
@@ -432,8 +432,8 @@ body{
   cursor:pointer;
   transition:border-color .2s,background .2s;
 }
-.lesson-item:hover{border-color:rgba(224,28,28,.2);background:var(--bg3)}
-.lesson-item.expanded{border-color:rgba(224,28,28,.25)}
+.lesson-item:hover{border-color:rgba(255,255,255,0.12);background:var(--bg3)}
+.lesson-item.expanded{border-color:rgba(255,255,255,0.15)}
 .lesson-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .lesson-num{
   font-size:.72rem;
@@ -452,7 +452,7 @@ body{
 .lesson-topics{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
 .topic-chip{
   background:var(--blue-dim);
-  border:1px solid rgba(224,28,28,.15);
+  border:1px solid rgba(255,255,255,0.09);
   color:var(--red);
   font-size:.75rem;
   font-weight:500;
@@ -502,7 +502,7 @@ body{
 .video-placeholder-icon{font-size:1.8rem;opacity:.4}
 .video-upload-btn{
   background:var(--blue-dim);
-  border:1px solid rgba(224,28,28,.18);
+  border:1px solid rgba(255,255,255,0.10);
   color:var(--red);
   font-family:var(--sans);
   font-size:.78rem;
@@ -623,7 +623,7 @@ body{
 .compose-input:focus{border-color:var(--red)}
 .btn-send{
   background:var(--red);
-  color:#fff;
+  color:#0d0d0d;
   font-family:var(--sans);
   font-weight:600;
   font-size:.84rem;
@@ -649,13 +649,13 @@ body{
   cursor:pointer;
   transition:border-color .2s,background .2s;
 }
-.pupil-row:hover{border-color:rgba(224,28,28,.2);background:var(--bg3)}
+.pupil-row:hover{border-color:rgba(255,255,255,0.12);background:var(--bg3)}
 .pupil-info{display:flex;align-items:center;gap:14px}
 .pupil-avatar{
   width:38px;height:38px;
   border-radius:50%;
   background:var(--blue-dim);
-  border:1px solid rgba(224,28,28,.18);
+  border:1px solid rgba(255,255,255,0.10);
   display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:.9rem;
   color:var(--red);
@@ -712,7 +712,7 @@ select.form-input option{background:var(--bg2)}
 .rating-star.active{color:var(--yellow)}
 .btn-sm{
   background:var(--red);
-  color:#fff;
+  color:#0d0d0d;
   font-family:var(--sans);
   font-weight:600;
   font-size:.84rem;
@@ -739,8 +739,8 @@ select.form-input option{background:var(--bg2)}
 
 /* ── GDL COUNTDOWN (in dashboard) ── */
 .gdl-bar{
-  background:linear-gradient(135deg,rgba(224,28,28,.1),rgba(26,107,255,.06));
-  border:1px solid rgba(224,28,28,.18);
+  background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(26,107,255,.06));
+  border:1px solid rgba(255,255,255,0.10);
   border-radius:var(--radius);
   padding:18px 22px;
   display:flex;
@@ -764,7 +764,7 @@ select.form-input option{background:var(--bg2)}
 .gdl-unit-label{font-size:.65rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
 .gdl-book{
   background:var(--red);
-  color:#fff;
+  color:#0d0d0d;
   font-family:var(--sans);
   font-weight:600;
   font-size:.8rem;
@@ -899,7 +899,7 @@ select.form-input option{background:var(--bg2)}
   cursor:pointer;
   transition:background .15s,color .15s;
 }
-.tab-btn.active{background:var(--red);color:#fff}
+.tab-btn.active{background:var(--red);color:#0d0d0d;color:#0d0d0d}
 
 /* ── SUCCESS TOAST ── */
 .toast{
@@ -927,10 +927,10 @@ select.form-input option{background:var(--bg2)}
   text-decoration:none;
   transition:border-color .2s,background .2s;
 }
-.booking-quick:hover{border-color:rgba(224,28,28,.2);background:var(--bg2)}
+.booking-quick:hover{border-color:rgba(255,255,255,0.12);background:var(--bg2)}
 .msg-badge{
   background:var(--red);
-  color:#fff;
+  color:#0d0d0d;
   font-size:.6rem;
   font-weight:700;
   width:16px;
@@ -947,7 +947,7 @@ select.form-input option{background:var(--bg2)}
 .book-dropdown-nav{position:relative}
 .book-nav-menu{
   display:none;position:absolute;top:calc(100% + 8px);right:0;
-  background:#0a1424;border:1px solid rgba(224,28,28,0.18);
+  background:#0a1424;border:1px solid rgba(255,255,255,0.10);
   border-radius:10px;padding:6px;min-width:200px;z-index:200;
   box-shadow:0 16px 48px rgba(0,0,0,.4);
 }
@@ -956,7 +956,7 @@ select.form-input option{background:var(--bg2)}
   display:block;padding:10px 12px;border-radius:7px;
   text-decoration:none;transition:background .15s;
 }
-.book-nav-option:hover{background:rgba(224,28,28,0.08)}
+.book-nav-option:hover{background:rgba(255,255,255,0.04)}
 
 /* ── SYLLABUS ACCORDION ── */
 .syllabus-accordion{margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
@@ -1817,7 +1817,7 @@ async function renderPupilBookings(el, pupil) {
       </div>
       ${canCancel ? `
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
-          <button class="btn-sm-outline" style="font-size:.78rem;padding:6px 14px;color:var(--red);border-color:rgba(224,28,28,.3)" onclick="cancelPupilBooking('${b.id}')">Cancel lesson</button>
+          <button class="btn-sm-outline" style="font-size:.78rem;padding:6px 14px;color:var(--red);border-color:rgba(255,255,255,0.18)" onclick="cancelPupilBooking('${b.id}')">Cancel lesson</button>
         </div>
       ` : showCancel ? `
         <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted)">
@@ -1877,7 +1877,7 @@ async function cancelPupilBooking(bookingId) {
 async function showBookingFlow(pupilId) {
   const wrap = document.getElementById('booking-flow-wrap');
   wrap.innerHTML = `
-    <div class="card" style="margin-bottom:24px;border-color:rgba(224,28,28,.2);background:rgba(224,28,28,.04)">
+    <div class="card" style="margin-bottom:24px;border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,.04)">
       <div class="card-title" style="margin-bottom:16px;color:var(--red)">Book a Lesson</div>
 
       <div class="form-group">
@@ -2002,7 +2002,7 @@ async function renderBookingDates() {
 
     html += `<button onclick="${isDisabled ? '' : `selectBookingDate('${dateStr}')`}"
       style="border-radius:8px;padding:8px 4px;border:1.5px solid ${isSelected ? 'var(--red)' : 'var(--border)'};
-      background:${isSelected ? 'rgba(224,28,28,.12)' : isDisabled ? 'var(--bg3)' : 'var(--bg2)'};
+      background:${isSelected ? 'rgba(255,255,255,0.07)' : isDisabled ? 'var(--bg3)' : 'var(--bg2)'};
       color:${isDisabled ? 'var(--muted2)' : isSelected ? 'var(--red)' : 'var(--text)'};
       cursor:${isDisabled ? 'not-allowed' : 'pointer'};font-family:var(--sans);
       display:flex;flex-direction:column;align-items:center;gap:2px;transition:.15s;width:100%;
@@ -2091,7 +2091,7 @@ async function renderBookingTimes() {
     return `<button onclick="${s.booked ? '' : `selectBookingTime('${label}')`}"
       style="padding:7px 11px;border-radius:8px;
       border:1.5px solid ${isSelected ? 'var(--red)' : 'var(--border)'};
-      background:${isSelected ? 'rgba(224,28,28,.15)' : s.booked ? 'var(--bg3)' : 'var(--bg2)'};
+      background:${isSelected ? 'rgba(255,255,255,0.09)' : s.booked ? 'var(--bg3)' : 'var(--bg2)'};
       color:${s.booked ? 'var(--muted2)' : isSelected ? 'var(--red)' : 'var(--text)'};
       font-family:var(--sans);font-size:.8rem;font-weight:600;
       cursor:${s.booked ? 'not-allowed' : 'pointer'};
@@ -2121,7 +2121,7 @@ function selectBookingTime(time) {
 
 function changeBookingWeek(dir) {
   const newOffset = window._bookingState.weekOffset + dir;
-  if (newOffset < 0 || newOffset > 3) return;
+  if (newOffset < 0 || newOffset > 5) return;
   window._bookingState.weekOffset = newOffset;
   window._bookingState.date = null;
   window._bookingState.time = null;
@@ -2462,7 +2462,7 @@ function bookingCard(b, isPast = false) {
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap">
           ${b.pupil_id ? `<button class="btn-sm" onclick="openPupil('${b.pupil_id}')">View Profile</button>` : ''}
           <button class="btn-sm-outline" style="color:#f97316;border-color:rgba(249,115,22,.3)" onclick="markNoShow('${b.id}')">No Show</button>
-          <button class="btn-sm-outline" style="color:var(--red);border-color:rgba(224,28,28,.3)" onclick="cancelBooking('${b.id}')">Cancel Lesson</button>
+          <button class="btn-sm-outline" style="color:var(--red);border-color:rgba(255,255,255,0.18)" onclick="cancelBooking('${b.id}')">Cancel Lesson</button>
         </div>
       ` : ''}
     </div>
@@ -2971,7 +2971,7 @@ async function renderTimeOff(el) {
       <div class="page-sub">Manage your working hours and block dates off</div>
     </div>
 
-    <div class="card" style="margin-bottom:20px;border-color:rgba(224,28,28,.2)">
+    <div class="card" style="margin-bottom:20px;border-color:rgba(255,255,255,0.12)">
       <div class="card-title" style="margin-bottom:6px">Pupil Access Code</div>
       <div style="font-size:.8rem;color:var(--muted);margin-bottom:16px">Pupils must enter this code to register. Share it after they first contact you.</div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -3040,7 +3040,7 @@ async function renderTimeOff(el) {
                 <div style="font-size:.9rem;font-weight:600;color:var(--text)">${d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
                 ${b.reason ? `<div style="font-size:.78rem;color:var(--muted);margin-top:2px">${b.reason}</div>` : ''}
               </div>
-              <button class="btn-sm-outline" style="font-size:.75rem;color:var(--red);border-color:rgba(224,28,28,.3)" onclick="removeBlockedDate('${b.id}')">Remove</button>
+              <button class="btn-sm-outline" style="font-size:.75rem;color:var(--red);border-color:rgba(255,255,255,0.18)" onclick="removeBlockedDate('${b.id}')">Remove</button>
             </div>`;
           }).join('')}
     </div>

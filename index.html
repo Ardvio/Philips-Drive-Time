@@ -17,8 +17,8 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 :root{
-  --red:#e01c1c;
-  --red-dim:rgba(224,28,28,0.12);
+  --red:#ffffff;
+  --red-dim:rgba(255,255,255,0.07);
   --bg:#0d0d0d;
   --bg2:#161616;
   --bg3:#1f1f1f;
@@ -60,12 +60,12 @@ nav{
 .nav-login:hover{color:var(--white);border-color:rgba(255,255,255,0.2)}
 .nav-cta{
   font-family:var(--sans);font-size:.82rem;font-weight:700;
-  color:var(--white);text-decoration:none;
+  color:#0d0d0d;text-decoration:none;
   padding:7px 16px;border-radius:8px;
   background:var(--red);
   transition:.2s;border:none;cursor:pointer;
 }
-.nav-cta:hover{background:#c81818}
+.nav-cta:hover{background:#e0e0e0}
 
 /* ── HERO ── */
 .hero{
@@ -78,7 +78,7 @@ nav{
 }
 .hero-bg{
   position:absolute;inset:0;
-  background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(224,28,28,0.08) 0%, transparent 70%);
+  background:none;
   pointer-events:none;
 }
 .hero-eyebrow{
@@ -111,13 +111,13 @@ h1 .red{color:var(--red)}
 .btn-primary{
   display:inline-flex;align-items:center;gap:8px;
   font-family:var(--sans);font-size:.88rem;font-weight:700;
-  color:var(--white);text-decoration:none;
+  color:#0d0d0d;text-decoration:none;
   background:var(--red);
   padding:13px 24px;border-radius:10px;
   transition:.2s;border:none;cursor:pointer;
-  box-shadow:0 0 0 1px rgba(224,28,28,0.3);
+  box-shadow:none;
 }
-.btn-primary:hover{background:#c81818;transform:translateY(-1px)}
+.btn-primary:hover{background:#e0e0e0;transform:translateY(-1px)}
 .btn-outline{
   display:inline-flex;align-items:center;
   font-family:var(--sans);font-size:.88rem;font-weight:600;
@@ -151,7 +151,7 @@ h1 .red{color:var(--red)}
 .trust-check{
   width:18px;height:18px;border-radius:50%;
   background:var(--red-dim);
-  border:1px solid rgba(224,28,28,0.3);
+  border:1px solid rgba(255,255,255,0.15);
   color:var(--red);font-size:.55rem;font-weight:900;
   display:flex;align-items:center;justify-content:center;
   flex-shrink:0;
@@ -270,7 +270,7 @@ h2{
   content:'';position:absolute;
   top:50%;left:50%;transform:translate(-50%,-50%);
   width:400px;height:400px;
-  background:radial-gradient(circle, rgba(224,28,28,0.1) 0%, transparent 70%);
+  background:radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
   pointer-events:none;
 }
 .cta h2{margin-bottom:12px}
@@ -278,13 +278,13 @@ h2{
 .cta-btn{
   display:inline-flex;align-items:center;gap:10px;
   font-family:var(--sans);font-size:.92rem;font-weight:700;
-  color:var(--white);text-decoration:none;
+  color:#0d0d0d;text-decoration:none;
   background:var(--red);
   padding:15px 28px;border-radius:12px;
-  box-shadow:0 4px 32px rgba(224,28,28,0.3);
+  box-shadow:none;
   transition:.2s;
 }
-.cta-btn:hover{background:#c81818;transform:translateY(-1px);box-shadow:0 8px 40px rgba(224,28,28,0.4)}
+.cta-btn:hover{background:#e0e0e0;transform:translateY(-1px);box-shadow:none}
 
 /* ── FOOTER ── */
 footer{
@@ -304,7 +304,7 @@ footer{
 @media(min-width:768px){
   nav{padding:0 48px;height:68px}
   .nav-logo{height:40px}
-  .nav-login,.nav-cta{font-size:.88rem;padding:9px 20px}
+  .nav-login,.nav-cta{color:#0d0d0d !important;font-size:.88rem;padding:9px 20px}
 
   .hero{
     padding:calc(68px + 80px) 80px 80px;

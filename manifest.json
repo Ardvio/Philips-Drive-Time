@@ -4,8 +4,8 @@
   "description": "Track your driving lessons, skills and progress with Philip Hughes.",
   "start_url": "/portal.html",
   "display": "standalone",
-  "background_color": "#060a14",
-  "theme_color": "#060a14",
+  "background_color": "#0d0d0d",
+  "theme_color": "#0d0d0d",
   "orientation": "portrait-primary",
   "icons": [
     {
