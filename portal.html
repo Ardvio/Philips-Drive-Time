@@ -1644,10 +1644,18 @@ async function navigate(view) {
 }
 
 async function fetchPupil(pupilId) {
-  const { data: pupil } = await sb.from('pupils').select('*').eq('id', pupilId).single();
-  const { data: lessons } = await sb.from('lessons').select('*').eq('pupil_id', pupilId).order('lesson_num');
-  const { data: skillRows } = await sb.from('skills').select('*').eq('pupil_id', pupilId);
-  const { data: msgs } = await sb.from('messages').select('*').eq('pupil_id', pupilId).order('created_at');
+  // Parallel fetch — 4 calls at once instead of sequential
+  const [
+    { data: pupil },
+    { data: lessons },
+    { data: skillRows },
+    { data: msgs }
+  ] = await Promise.all([
+    sb.from('pupils').select('*').eq('id', pupilId).single(),
+    sb.from('lessons').select('*').eq('pupil_id', pupilId).order('lesson_num'),
+    sb.from('skills').select('*').eq('pupil_id', pupilId),
+    sb.from('messages').select('*').eq('pupil_id', pupilId).order('created_at')
+  ]);
   const skills = {};
   (skillRows||[]).forEach(s => { skills[s.skill_name] = s.status; });
   return {
@@ -1660,16 +1668,49 @@ async function fetchPupil(pupilId) {
 }
 
 async function fetchAllPupils(includeArchived = false) {
-  let query = sb.from('pupils').select('*').order('created_at');
+  // Bulk fetch — 4 total queries for ALL pupils instead of 4 per pupil
+  let pupilQuery = sb.from('pupils').select('*').order('created_at');
   if (!includeArchived) {
-    query = query.or('archived.eq.false,archived.is.null');
+    pupilQuery = pupilQuery.or('archived.eq.false,archived.is.null');
   } else {
-    query = query.eq('archived', true);
+    pupilQuery = pupilQuery.eq('archived', true);
   }
-  const { data: pupils } = await query;
-  const result = [];
-  for (const p of (pupils||[])) result.push(await fetchPupil(p.id));
-  return result;
+  const { data: pupils } = await pupilQuery;
+  if (!pupils || pupils.length === 0) return [];
+
+  const ids = pupils.map(p => p.id);
+
+  // Fetch all related data in parallel — one query each regardless of pupil count
+  const [
+    { data: allLessons },
+    { data: allSkillRows },
+    { data: allMsgs }
+  ] = await Promise.all([
+    sb.from('lessons').select('*').in('pupil_id', ids).order('lesson_num'),
+    sb.from('skills').select('*').in('pupil_id', ids),
+    sb.from('messages').select('*').in('pupil_id', ids).order('created_at')
+  ]);
+
+  // Group by pupil_id in memory
+  const lessonsByPupil = {}, skillsByPupil = {}, msgsByPupil = {};
+  (allLessons||[]).forEach(l => { (lessonsByPupil[l.pupil_id] = lessonsByPupil[l.pupil_id]||[]).push(l); });
+  (allSkillRows||[]).forEach(s => { (skillsByPupil[s.pupil_id] = skillsByPupil[s.pupil_id]||[]).push(s); });
+  (allMsgs||[]).forEach(m => { (msgsByPupil[m.pupil_id] = msgsByPupil[m.pupil_id]||[]).push(m); });
+
+  return pupils.map(pupil => {
+    const lessons = lessonsByPupil[pupil.id] || [];
+    const skillRows = skillsByPupil[pupil.id] || [];
+    const msgs = msgsByPupil[pupil.id] || [];
+    const skills = {};
+    skillRows.forEach(s => { skills[s.skill_name] = s.status; });
+    return {
+      ...pupil, startDate: pupil.start_date, totalLessons: lessons.length,
+      nextLesson: { date: pupil.next_lesson_date, topics: pupil.next_lesson_topics },
+      skills,
+      lessons: lessons.map(l => ({ ...l, num: l.lesson_num, video: l.video_url, topics: l.topics||[] })),
+      messages: msgs.map(m => ({ ...m, from: m.sender_role==='instructor'?'philip':'pupil', sender: m.sender_name, time: new Date(m.created_at).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}), body: m.body }))
+    };
+  });
 }
 
 function renderPupilDashboard(el, pupil) {
