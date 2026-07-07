@@ -1319,6 +1319,10 @@ const NI_SYLLABUS = [
     { name:'Rural roads', desc:'Narrow roads, poor visibility around bends, farm vehicles, animals. Reduce speed on unfamiliar rural roads and be prepared to stop or pull in for oncoming vehicles.' },
     { name:'Night driving awareness', desc:'Reduced visibility, harder to judge speed and distance. Use dipped headlights, increase following distance, watch for pedestrians in dark clothing, and be extra alert at junctions.' },
   ]},
+  { category:'MSPSL & LADA — Junction Routines', skills:[
+    { name:'MSPSL — Mirrors, Signal, Position, Speed, Look', desc:'The routine for approaching every junction safely. Mirrors first, then signal early, position the car correctly, reduce to the right speed, and look carefully before committing. Philip will practise this until it is automatic.', fbLink:'https://www.facebook.com/reel/995243159814135' },
+    { name:'LADA — Look, Assess, Decide, Act', desc:'Used when emerging from a junction. Look at what you can see, assess whether the gap is safe, decide to go or wait, then act smoothly. If you are not sure — wait. Philip uses this alongside MSPSL to build safe junction judgement.', fbLink:'https://www.facebook.com/reel/986302380696361' },
+  ]},
   { category:'Test Readiness', skills:[
     { name:'Mock test 1 completed', desc:'A full mock test under test conditions — no commentary, examiner-style assessment. Philip will identify your faults and areas to work on before booking the real thing.' },
     { name:'Mock test 2 completed', desc:'A second mock test to assess improvement after addressing faults from mock test 1. Philip will only recommend booking your real test when you\'re consistently passing mock tests.' },
@@ -2311,6 +2315,7 @@ async function renderSyllabus(el, pupil) {
             const status = pupil.skills[sk.name] || 'not-started';
             const videoUrl = videos[sk.name];
             const embedHtml = (!noVideo && videoUrl) ? youtubeEmbed(videoUrl) : '';
+            const fbHtml = sk.fbLink ? `<a href="${sk.fbLink}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;margin-top:10px;padding:9px 16px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:var(--text);text-decoration:none;font-size:.82rem;font-weight:600">▶&nbsp; Watch on Facebook</a>` : '';
             return `
               <div class="syllabus-accordion" id="acc-${i}" style="margin-bottom:6px">
                 <div class="syllabus-accordion-header" onclick="toggleAccordion(${i})" style="padding:13px 16px">
@@ -2325,6 +2330,7 @@ async function renderSyllabus(el, pupil) {
                 <div class="syllabus-accordion-body" id="body-${i}">
                   <div class="accordion-description">${sk.desc}</div>
                   ${embedHtml}
+                  ${fbHtml}
                 </div>
               </div>
             `;
