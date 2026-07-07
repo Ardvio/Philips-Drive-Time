@@ -2246,6 +2246,54 @@ async function renderSyllabus(el, pupil) {
     <div class="progress-bar" style="margin-bottom:28px;height:8px">
       <div class="progress-fill" style="width:${pct}%"></div>
     </div>
+
+    <!-- TEST REPORT GUIDE -->
+    <div style="margin-bottom:28px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+      <div onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.tg-chev').classList.toggle('open')"
+        style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:var(--bg2);cursor:pointer;user-select:none">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:1.1rem">📋</span>
+          <div>
+            <div style="font-size:.95rem;font-weight:700;color:var(--text)">Test Report Guide</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:2px">What the examiner is looking for — tap to expand</div>
+          </div>
+        </div>
+        <span class="tg-chev accordion-chevron" style="font-size:.8rem">▼</span>
+      </div>
+      <div class="syllabus-accordion-body" style="padding:0;background:var(--bg2)">
+        ${[
+          ['Eyesight Test', 'At the start of the test the examiner will ask you to read a vehicle registration number. If you require glasses or contact lenses, you must wear them whenever you drive.'],
+          ['1.2 Safety Questions', 'You should be able to show or tell the examiner how to carry out basic safety checks on your vehicle before starting to drive. This may include checks on fluids, lights, audible warning device, tyres, brakes and steering.'],
+          ['2.0 Ancillary Controls', 'You should understand the function of all controls and switches, especially those with a bearing on road safety — indicators, lights, windscreen wipers, demisters and heaters. Find and operate them correctly without looking down.'],
+          ['3.0 Precautions', 'Make certain the doors are shut. Adjust the seat, head restraint, mirrors and seat belt so you are comfortable and can reach all controls. Before starting the engine ensure the handbrake is on and the gear lever is in neutral.'],
+          ['4.0 Control', 'Covers use of the accelerator, clutch, gears, footbrake, handbrake and steering. Use controls as smoothly as possible. Select the correct gear for road and traffic conditions. Do not coast in neutral. Use the footbrake smoothly and progressively.'],
+          ['5.0 Move Away', 'Move off safely and under control on the level, from behind a parked vehicle, and on a hill where practicable. Always use mirrors and signal if necessary. Check blind spots before moving. Do not allow the vehicle to roll back.'],
+          ['6.0 Emergency Stop', 'Brake evenly and progressively and try to avoid locking the wheels. In wet weather it can take twice as long to stop safely.'],
+          ['7.0 Reverse to the Left', 'Take good, effective, all-round observation and show consideration to other road users. Control your speed and steer reasonably close to the kerb. Remember your vehicle will swing out as you turn the corner.'],
+          ['8.0 Turn in the Road', 'Take good, effective, all-round observation throughout. Control the vehicle smoothly. Do not let it mount the pavement or touch the kerbs.'],
+          ['9.0 Reverse Parking', 'Take good, effective, all-round observation and show consideration to others. As you steer into the space the front of the car will swing out — watch for cyclists and pedestrians.'],
+          ['10.0 Use of Mirrors', 'Use your mirrors often and always be aware of your blind spots. Use the Mirrors–Signal–Manoeuvre (MSM) routine. Check carefully before signalling, changing direction or changing speed.'],
+          ['11.0 Signals', 'Signal clearly to let others know what you intend to do. Signal only as shown in the Highway Code, when necessary, and in plenty of time. Always cancel the signal after completing the manoeuvre.'],
+          ['12.0 Response to Signs & Signals', 'Understand and react to all traffic signs and road markings. Act correctly at traffic lights — check the road is clear before proceeding on green. Obey signals from police officers, traffic wardens and school crossing patrols.'],
+          ['13.0 Use of Speed', 'Make safe, reasonable progress bearing in mind road, traffic and weather conditions. Make sure you can stop safely within the distance you can see to be clear. Do not speed.'],
+          ['14.0 Following Distance', 'Always keep a safe distance between yourself and other vehicles. On wet or slippery roads it takes much longer to stop. In traffic queues leave enough space to pull out if the vehicle in front has problems.'],
+          ['15.0 Maintain Progress', 'Drive at a realistic speed appropriate to road and traffic conditions. Approach hazards at a safe speed without being over-cautious or holding up other traffic. Be ready to move away from junctions as soon as it is safe.'],
+          ['16.0 Junctions & Roundabouts', 'Judge the correct speed of approach to enter junctions safely. Position correctly and use the correct lane. Avoid cutting corners when turning right. Watch for cyclists, motorcyclists and pedestrians. Take effective observation before moving into a junction.'],
+          ['17.0 Judgement', 'Only overtake when safe. Allow enough room — cyclists need at least as much space as other vehicles. Do not cut in too quickly after overtaking. When turning right across oncoming traffic, make sure you can do so safely without others having to stop or swerve.'],
+          ['18.0 Positioning', 'Position the vehicle correctly, normally well to the left. Keep clear of parked vehicles. Where lanes are marked, keep to the middle of your lane. Do not change lanes unnecessarily.'],
+          ['19.0 Clearance to Stationary Vehicles', 'Allow plenty of room to pass stationary vehicles. A door may open, a child may run out or a vehicle may pull out without warning. Keep a safe distance from large obstructions.'],
+          ['20.0 Pedestrian Crossings', 'Recognise the different types of crossing and show courtesy to pedestrians. Slow down and stop if anyone is on the crossing. At zebra crossings be prepared to stop if anyone is waiting. Give way to cyclists and pedestrians on a toucan crossing.'],
+          ['21.0 Normal Stops', 'Choose a safe, legal and convenient place to stop, close to the edge of the road, where you will not cause an obstruction or hazard to other road users.'],
+          ['22.0 Awareness & Planning', 'Be aware of other road users at all times. Think and plan ahead — judge what others are going to do and react in good time. Take particular care around pedestrians, cyclists, motorcyclists and horse riders.'],
+        ].map(([title, desc]) => `
+          <div style="padding:14px 18px;border-top:1px solid var(--border)">
+            <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:5px">${title}</div>
+            <div style="font-size:.82rem;color:var(--muted);line-height:1.7">${desc}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
     ${NI_SYLLABUS.map(cat => {
       const catConf = cat.skills.filter(sk => pupil.skills[sk.name]==='confident').length;
       const allConf = catConf === cat.skills.length;
