@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Drive Time"/>
 <link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
@@ -860,6 +860,26 @@ select.form-input option{background:var(--bg2)}
 }
 .bn-badge.show{display:block}
 
+/* ── ADD TO HOME SCREEN HOW-TO ── */
+.a2hs{
+  position:fixed;left:12px;right:12px;bottom:16px;z-index:1100;max-width:440px;margin:0 auto;
+  background:rgba(28,28,30,.96);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:16px;padding:16px 16px 14px;
+  box-shadow:0 20px 50px rgba(0,0,0,.6);display:none;
+}
+.a2hs.show{display:block;animation:a2hsIn .45s cubic-bezier(.22,1,.36,1)}
+@keyframes a2hsIn{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.a2hs-head{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.a2hs-head img{width:44px;height:44px;border-radius:10px;flex:none}
+.a2hs-title{font-weight:700;font-size:.95rem}
+.a2hs-sub{font-size:.8rem;color:var(--muted)}
+.a2hs ol{margin:4px 0 12px 20px;font-size:.86rem;line-height:1.6;color:var(--text)}
+.a2hs-icon{display:inline-block;vertical-align:-3px;width:16px;height:16px}
+.a2hs-actions{display:flex;gap:8px;justify-content:flex-end}
+.a2hs-actions button{font:600 .82rem var(--sans);border-radius:999px;padding:8px 14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text)}
+.a2hs-actions .primary{background:#fff;color:#0d0d0d;border-color:#fff}
+@media (prefers-reduced-motion:reduce){.a2hs.show{animation:none}}
+
 /* ── RESPONSIVE ── */
 @media(max-width:767px){
   .sidebar{display:none!important}
@@ -867,7 +887,13 @@ select.form-input option{background:var(--bg2)}
   .stats-grid{grid-template-columns:repeat(3,1fr);gap:8px}
   .form-row{grid-template-columns:1fr}
   .topic-select-grid{grid-template-columns:1fr}
-  .topnav{padding:0 16px}
+  .topnav{
+    position:fixed;left:0;right:0;top:0;
+    height:calc(60px + env(safe-area-inset-top));
+    padding:env(safe-area-inset-top) 16px 0;
+  }
+  #app{padding-top:calc(60px + env(safe-area-inset-top))}
+  .a2hs{bottom:calc(66px + env(safe-area-inset-bottom))}
   .pupil-stats{display:none}
   .page-title{font-size:1.3rem}
   .bottom-nav{display:block!important}
@@ -1177,6 +1203,19 @@ select.form-input option{background:var(--bg2)}
   </div>
 
   <!-- BOTTOM NAV — mobile only -->
+  <div class="a2hs" id="a2hs" role="dialog" aria-labelledby="a2hs-title">
+    <div class="a2hs-head">
+      <img src="apple-touch-icon.png" alt=""/>
+      <div><div class="a2hs-title" id="a2hs-title">Add Drive Time to your home screen</div>
+      <div class="a2hs-sub">Open it like an app, one tap from your home screen.</div></div>
+    </div>
+    <ol id="a2hs-steps"></ol>
+    <div class="a2hs-actions">
+      <button onclick="hideA2hs(7)">Not now</button>
+      <button class="primary" id="a2hs-main" onclick="hideA2hs(3650)">Done</button>
+    </div>
+  </div>
+
   <nav class="bottom-nav" id="bottom-nav">
     <div class="bottom-nav-inner" id="bottom-nav-inner">
       <!-- populated by JS -->
@@ -1530,7 +1569,39 @@ async function logout() {
   sessionStorage.removeItem('pdt-user-id');
   currentUser = null; currentRole = null; currentProfile = null; currentView = 'dashboard';
   document.getElementById('app').style.display = 'none';
+  document.getElementById('a2hs').classList.remove('show');
   document.getElementById('login-screen').style.display = 'flex';
+}
+
+// ── Add to Home Screen how-to ──
+let a2hsPrompt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); a2hsPrompt = e; });
+function isInstalled() { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }
+function hideA2hs(days) {
+  document.getElementById('a2hs').classList.remove('show');
+  try { localStorage.setItem('pdt-a2hs-hide-until', Date.now() + days * 864e5); } catch (e) {}
+}
+function maybeShowA2hs() {
+  if (isInstalled()) return;
+  const ua = navigator.userAgent;
+  const iOS = /iPhone|iPad|iPod/.test(ua) || (ua.includes('Mac') && navigator.maxTouchPoints > 1);
+  const android = /Android/.test(ua);
+  if (!iOS && !android) return;
+  try { if (Date.now() < +(localStorage.getItem('pdt-a2hs-hide-until') || 0)) return; } catch (e) {}
+  const share = '<svg class="a2hs-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>';
+  const steps = document.getElementById('a2hs-steps');
+  const main = document.getElementById('a2hs-main');
+  if (iOS) {
+    steps.innerHTML = `<li>Tap the <b>Share</b> button ${share} at the bottom of Safari (or the top on iPad)</li>
+      <li>Scroll down and tap <b>Add to Home Screen</b></li><li>Tap <b>Add</b></li>`;
+  } else if (a2hsPrompt) {
+    steps.innerHTML = '<li>Tap <b>Install</b> below</li><li>Confirm, and Drive Time appears on your home screen</li>';
+    main.textContent = 'Install';
+    main.onclick = async () => { a2hsPrompt.prompt(); await a2hsPrompt.userChoice; a2hsPrompt = null; hideA2hs(3650); };
+  } else {
+    steps.innerHTML = '<li>Tap the <b>⋮</b> menu at the top right of Chrome</li><li>Tap <b>Add to Home screen</b> (or <b>Install app</b>)</li><li>Tap <b>Add</b></li>';
+  }
+  setTimeout(() => document.getElementById('a2hs').classList.add('show'), 1500);
 }
 
 function bootApp() {
@@ -1540,6 +1611,7 @@ function bootApp() {
   app.style.display = 'flex';
   document.getElementById('user-avatar').textContent = (currentProfile?.name || 'U').split(' ').map(n=>n[0]).join('');
   renderSidebar(); navigate('dashboard');
+  maybeShowA2hs();
 }
 
 function renderSidebar() {
