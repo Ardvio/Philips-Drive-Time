@@ -82,17 +82,16 @@ const NI_SYLLABUS = [
 ];
 const ALL_TOPICS = NI_SYLLABUS.flatMap(s => s.skills);
 
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function load() {
   const params = new URLSearchParams(window.location.search);
-  const pupilId = params.get('pupil');
-  if (!pupilId) { document.getElementById('app').innerHTML = '<div class="error-msg">Invalid link.</div>'; return; }
-
-  const { data: pupil } = await sb.from('pupils').select('*').eq('id', pupilId).single();
-  const { data: lessons } = await sb.from('lessons').select('*').eq('pupil_id', pupilId);
-  const { data: skillRows } = await sb.from('skills').select('*').eq('pupil_id', pupilId);
-
-  if (!pupil) { document.getElementById('app').innerHTML = '<div class="error-msg">Pupil not found.</div>'; return; }
-
+  const token = params.get('t');
+  if (!token) { document.getElementById('app').innerHTML = '<div class="error-msg">This link has expired. Ask your learner for a new link from their portal.</div>'; return; }
+  const { data: shared } = await sb.rpc('get_shared_progress', { p_token: token });
+  if (!shared) { document.getElementById('app').innerHTML = '<div class="error-msg">Link not found. Ask your learner for a new link from their portal.</div>'; return; }
+  const pupil = { name: shared.name, start_date: shared.start_date };
+  const lessons = { length: shared.lessons };
+  const skillRows = shared.skills;
   const skills = {};
   (skillRows||[]).forEach(s => { skills[s.skill_name] = s.status; });
 
@@ -107,7 +106,7 @@ async function load() {
   document.getElementById('app').innerHTML = `
     <div class="container">
       <div class="header">
-        <div class="pupil-name">${pupil.name}</div>
+        <div class="pupil-name">${esc(pupil.name)}</div>
         ${startDate ? `<div class="start-date">Started ${startDate}</div>` : ''}
       </div>
 

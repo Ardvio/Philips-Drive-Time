@@ -1403,17 +1403,22 @@ function showLogin() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
+// Text from the database is shown as text, never run as page code
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let enteredAccessCode = '';
+let diaryWeekData = { bookings: [], lessons: [] };  // the diary's current week, used when a day is clicked
 async function checkAccessCode() {
   const input = document.getElementById('access-code-input').value.trim().toUpperCase();
   const errEl = document.getElementById('access-code-error');
   errEl.style.display = 'none';
   if (!input) { errEl.textContent = 'Please enter the access code.'; errEl.style.display = 'block'; return; }
-  const { data } = await sb.from('access_codes').select('code').eq('id', 1).single();
-  if (!data || input !== data.code.toUpperCase()) {
+  const { data: codeOk } = await sb.rpc('check_access_code', { p_code: input });
+  if (!codeOk) {
     errEl.textContent = 'Incorrect code. Contact Philip to get your access code.';
     errEl.style.display = 'block';
     return;
   }
+  enteredAccessCode = input;
   document.getElementById('access-code-screen').style.display = 'none';
   document.getElementById('register-screen').style.display = 'flex';
 }
@@ -1453,18 +1458,18 @@ async function doRegister() {
   const { data: authData, error: authErr } = await sb.auth.signUp({ 
     email, 
     password,
-    options: { emailRedirectTo: 'https://philipsdrivetime.com/portal.html' }
+    options: {
+      emailRedirectTo: 'https://philipsdrivetime.com/portal.html',
+      data: { signup: 'pupil', first, last, phone, license, access_code: enteredAccessCode, terms_version: '2026-05-22', topics: ALL_TOPICS }
+    }
   });
-  if (authErr) { errEl.textContent = authErr.message; errEl.style.display = 'block'; btn.textContent = 'Create Account'; btn.disabled = false; return; }
-  const userId = authData.user.id;
-  const { data: pupil } = await sb.from('pupils').insert({ name, email, phone, license_number: license, start_date: new Date().toISOString().split('T')[0], next_lesson_date: 'Not yet scheduled', next_lesson_topics: 'To be confirmed' }).select().single();
-  await sb.from('profiles').insert({ id: userId, name, email, phone, license_number: license, role: 'pupil', pupil_id: pupil.id });
-  await sb.from('profiles').update({ terms_agreed: true, terms_agreed_at: new Date().toISOString(), terms_version: '2026-05-22' }).eq('id', userId);
-  await sb.from('skills').insert(ALL_TOPICS.map(skill => ({ pupil_id: pupil.id, skill_name: skill, status: 'not-started' })));
-  await sb.from('messages').insert({ pupil_id: pupil.id, sender_name: 'Philip', sender_role: 'instructor', body: `Welcome ${first}! I can see you've created your account. Get in touch to book your first lesson and we'll get started.` });
+  if (authErr) { errEl.textContent = authErr.message.includes('Database error') ? 'Could not create your account. Check your access code with Philip and try again.' : authErr.message; errEl.style.display = 'block'; btn.textContent = 'Create Account'; btn.disabled = false; return; }
+  if (!authData.session) { errEl.textContent = 'Account created. Check your email to confirm, then sign in.'; errEl.style.display = 'block'; btn.textContent = 'Create Account'; btn.disabled = false; return; }
   currentUser = authData.user;
-  currentProfile = { id: userId, name, email, role: 'pupil', pupil_id: pupil.id };
-  currentRole = 'pupil'; selectedPupilId = pupil.id;
+  const { data: newProfile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+  if (!newProfile) { errEl.textContent = 'Account created but not set up yet. Please contact Philip.'; errEl.style.display = 'block'; btn.textContent = 'Create Account'; btn.disabled = false; return; }
+  currentProfile = newProfile;
+  currentRole = 'pupil'; selectedPupilId = newProfile.pupil_id;
   document.getElementById('register-screen').style.display = 'none';
   // Show confirmation screen before booting app
   document.getElementById('register-screen').style.display = 'none';
@@ -1730,7 +1735,7 @@ function renderPupilDashboard(el, pupil) {
   const eligibleStr = eligible.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   const daysToEligible = Math.max(0,Math.ceil((eligible-new Date())/86400000));
   el.innerHTML = `
-    <div class="page-header"><div class="page-title">Hey, ${pupil.name.split(' ')[0]}</div><div class="page-sub">Here's where you're at with your lessons.</div></div>
+    <div class="page-header"><div class="page-title">Hey, ${esc(pupil.name.split(' ')[0])}</div><div class="page-sub">Here's where you're at with your lessons.</div></div>
     ${pupil.test_date ? (() => {
       const td = new Date(pupil.test_date);
       const daysTo = Math.ceil((td - new Date()) / 86400000);
@@ -1742,13 +1747,13 @@ function renderPupilDashboard(el, pupil) {
     })() : ''}
     ${pupil.lessons.length > 0 ? `
     <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:.84rem;color:#86efac;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <span>Philip has logged your last lesson — <strong style="color:#fff">Lesson ${pupil.lessons[pupil.lessons.length-1].num}: ${pupil.lessons[pupil.lessons.length-1].title}</strong></span>
+      <span>Philip has logged your last lesson — <strong style="color:#fff">Lesson ${pupil.lessons[pupil.lessons.length-1].num}: ${esc(pupil.lessons[pupil.lessons.length-1].title)}</strong></span>
       <button class="btn-sm-outline" style="font-size:.78rem;padding:5px 12px;color:#86efac;border-color:rgba(34,197,94,.3)" onclick="navigate('lessons')">View →</button>
     </div>` : ''}
     <div class="next-lesson">
       <div class="next-lesson-label">Next lesson</div>
       <div class="next-lesson-date">${pupil.nextLesson.date}</div>
-      <div class="next-lesson-topics">Topics: ${pupil.nextLesson.topics}</div>
+      <div class="next-lesson-topics">Topics: ${esc(pupil.nextLesson.topics)}</div>
       <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
         <button class="next-lesson-book" onclick="navigate('bookings')">Standard £40</button>
         <button class="next-lesson-book" onclick="navigate('bookings')">Saturday £45</button>
@@ -1786,20 +1791,20 @@ async function renderPupilProfile(el, pupil) {
     <div class="add-lesson-form" style="max-width:500px">
       <div class="form-group">
         <label class="form-label">Full name</label>
-        <input class="form-input" id="prof-name" type="text" value="${pupil.name||''}"/>
+        <input class="form-input" id="prof-name" type="text" value="${esc(pupil.name||'')}"/>
       </div>
       <div class="form-group">
         <label class="form-label">Email</label>
-        <input class="form-input" id="prof-email" type="email" value="${pupil.email||''}" disabled style="opacity:.5;cursor:not-allowed"/>
+        <input class="form-input" id="prof-email" type="email" value="${esc(pupil.email||'')}" disabled style="opacity:.5;cursor:not-allowed"/>
         <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Email cannot be changed — contact Philip if needed.</div>
       </div>
       <div class="form-group">
         <label class="form-label">Phone number</label>
-        <input class="form-input" id="prof-phone" type="tel" value="${pupil.phone||''}" placeholder="+44 7700 000000"/>
+        <input class="form-input" id="prof-phone" type="tel" value="${esc(pupil.phone||'')}" placeholder="+44 7700 000000"/>
       </div>
       <div class="form-group">
         <label class="form-label">Driver's licence number <span style="color:var(--muted2);font-weight:400;text-transform:none;letter-spacing:0">(8 digits — section 5 of your licence)</span></label>
-        <input class="form-input" id="prof-license" type="text" value="${pupil.license_number||''}" placeholder="12345678" maxlength="8"/>
+        <input class="form-input" id="prof-license" type="text" value="${esc(pupil.license_number||'')}" placeholder="12345678" maxlength="8"/>
       </div>
       <div class="flex gap12 align-center" style="margin-top:8px">
         <button class="btn-sm" onclick="saveProfile('${pupil.id}')">Save Changes</button>
@@ -1811,7 +1816,7 @@ async function renderPupilProfile(el, pupil) {
         <div class="card-title" style="margin-bottom:8px">Share progress with parents</div>
         <p style="font-size:.84rem;color:var(--muted);margin-bottom:12px">Share this link with your parents so they can view your progress without needing a login.</p>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input class="form-input" id="share-link" type="text" value="https://ardvio.github.io/Philips-Drive-Time/progress.html?pupil=${pupil.id}" readonly style="font-size:.78rem;opacity:.7;flex:1;min-width:0"/>
+          <input class="form-input" id="share-link" type="text" value="https://philipsdrivetime.com/progress.html?t=${pupil.share_token}" readonly style="font-size:.78rem;opacity:.7;flex:1;min-width:0"/>
           <button class="btn-sm" onclick="copyShareLink()">Copy Link</button>
         </div>
       </div>
@@ -1857,9 +1862,9 @@ async function renderPupilBookings(el, pupil) {
         </div>
         <div style="flex:1;min-width:0">
           <div style="font-size:.9rem;font-weight:600;color:var(--text)">${dateStr} · ${timeStr}</div>
-          <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Pickup: ${b.pickup_location||'Not specified'}</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Pickup: ${esc(b.pickup_location||'Not specified')}</div>
         </div>
-        <span style="font-size:.72rem;font-weight:700;color:${colour};background:${colour}18;padding:4px 10px;border-radius:100px;border:1px solid ${colour}33;white-space:nowrap">${b.lesson_type}</span>
+        <span style="font-size:.72rem;font-weight:700;color:${colour};background:${colour}18;padding:4px 10px;border-radius:100px;border:1px solid ${colour}33;white-space:nowrap">${esc(b.lesson_type)}</span>
       </div>
       ${canCancel ? `
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
@@ -2001,10 +2006,7 @@ async function renderBookingDates() {
   // Get availability & blocked dates
   const { data: avail } = await sb.from('availability').select('*');
   const { data: blocked } = await sb.from('blocked_dates').select('*');
-  const { data: existingBookings } = await sb.from('bookings')
-    .select('start_time, lesson_type')
-    .gte('start_time', new Date().toISOString())
-    .neq('status', 'cancelled');
+  const { data: existingBookings } = await sb.rpc('get_busy_slots', { p_from: new Date().toISOString() });
 
   const blockedSet = new Set((blocked||[]).map(b => b.date));
 
@@ -2096,11 +2098,7 @@ async function renderBookingTimes() {
   // Get existing bookings for this date using local time
   const dayStart = new Date(yr, mo-1, dy, 0, 0, 0);
   const dayEnd   = new Date(yr, mo-1, dy, 23, 59, 59);
-  const { data: existingBookings } = await sb.from('bookings')
-    .select('start_time, lesson_type')
-    .gte('start_time', dayStart.toISOString())
-    .lte('start_time', dayEnd.toISOString())
-    .neq('status', 'cancelled');
+  const { data: existingBookings } = await sb.rpc('get_busy_slots', { p_from: dayStart.toISOString(), p_to: dayEnd.toISOString() });
 
   const bookedSlots = (existingBookings||[]).map(b => {
     const start = new Date(b.start_time);
@@ -2218,10 +2216,10 @@ function renderLessons(el, pupil) {
 
 function lessonCard(l) {
   return `<div class="lesson-item" id="lesson-${l.id}" onclick="toggleLesson('${l.id}')">
-    <div class="lesson-header"><div><div class="lesson-num">Lesson ${l.num} · ${l.duration} min</div><div class="lesson-title">${l.title}</div><div class="lesson-date">${formatDate(l.date)}</div></div><div class="lesson-rating">${stars(l.rating)}</div></div>
+    <div class="lesson-header"><div><div class="lesson-num">Lesson ${l.num} · ${l.duration} min</div><div class="lesson-title">${esc(l.title)}</div><div class="lesson-date">${formatDate(l.date)}</div></div><div class="lesson-rating">${stars(l.rating)}</div></div>
     <div class="lesson-body">
-      <div class="lesson-topics">${(l.topics||[]).map(t=>`<span class="topic-chip">${t}</span>`).join('')}</div>
-      <div class="lesson-notes"><strong>Philip's notes</strong>${l.notes||''}</div>
+      <div class="lesson-topics">${(l.topics||[]).map(t=>`<span class="topic-chip">${esc(t)}</span>`).join('')}</div>
+      <div class="lesson-notes"><strong>Philip's notes</strong>${esc(l.notes||'')}</div>
       <div class="video-slot${l.video?' has-video':''}">${l.video?`<video controls playsinline webkit-playsinline src="${l.video}"></video>`:`<div class="video-placeholder"><div class="video-placeholder-icon">▶</div><div>No video for this lesson yet</div></div>`}</div>
     </div>
   </div>`;
@@ -2379,9 +2377,9 @@ async function renderMessages(el, pupilId) {
   if (!pupilId) { el.innerHTML = '<div style="padding:40px;color:var(--muted)">Select a pupil first.</div>'; return; }
   const { data: msgs } = await sb.from('messages').select('*').eq('pupil_id', pupilId).order('created_at');
   const { data: pupil } = await sb.from('pupils').select('name').eq('id', pupilId).single();
-  el.innerHTML = `<div class="page-header"><div class="page-title">Messages</div><div class="page-sub">${currentRole==='instructor'?(pupil?.name||''):'With Philip'}</div></div>
+  el.innerHTML = `<div class="page-header"><div class="page-title">Messages</div><div class="page-sub">${currentRole==='instructor'?esc(pupil?.name||''):'With Philip'}</div></div>
     <div class="messages-list" id="msg-list">
-      ${(msgs||[]).map(m=>`<div class="message-item from-${m.sender_role==='instructor'?'philip':'pupil'}"><div class="message-meta"><span class="message-sender">${m.sender_name}</span><span class="message-time">${new Date(m.created_at).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div><div class="message-body">${m.body}</div></div>`).join('')}
+      ${(msgs||[]).map(m=>`<div class="message-item from-${m.sender_role==='instructor'?'philip':'pupil'}"><div class="message-meta"><span class="message-sender">${esc(m.sender_name)}</span><span class="message-time">${new Date(m.created_at).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div><div class="message-body">${esc(m.body)}</div></div>`).join('')}
     </div>
     <div class="compose-area"><textarea class="compose-input" id="compose-text" placeholder="Type a message..."></textarea><button class="btn-send" onclick="sendMessage('${pupilId}')">Send Message</button></div>`;
 }
@@ -2523,8 +2521,8 @@ function bookingCard(b, isPast = false) {
   const timeStr = date.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
   const typeColour = b.lesson_type === 'Saturday Lesson' ? 'var(--yellow)' : b.lesson_type === 'Test' ? 'var(--green)' : 'var(--blue)';
   const nameEl = b.pupil_id
-    ? `<div style="font-size:.95rem;font-weight:600;color:var(--red);cursor:pointer;text-decoration:underline" onclick="openPupil('${b.pupil_id}')">${b.invitee_name}</div>`
-    : `<div style="font-size:.95rem;font-weight:600;color:var(--text)">${b.invitee_name}</div>`;
+    ? `<div style="font-size:.95rem;font-weight:600;color:var(--red);cursor:pointer;text-decoration:underline" onclick="openPupil('${b.pupil_id}')">${esc(b.invitee_name)}</div>`
+    : `<div style="font-size:.95rem;font-weight:600;color:var(--text)">${esc(b.invitee_name)}</div>`;
 
   return `
     <div class="card-sm" style="opacity:${isPast?'.5':'1'}">
@@ -2536,7 +2534,7 @@ function bookingCard(b, isPast = false) {
           </div>
           <div>
             ${nameEl}
-            <div style="font-size:.8rem;color:var(--muted);margin-top:2px">${b.invitee_email}</div>
+            <div style="font-size:.8rem;color:var(--muted);margin-top:2px">${esc(b.invitee_email)}</div>
           </div>
         </div>
         <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
@@ -2546,11 +2544,11 @@ function bookingCard(b, isPast = false) {
           </div>
           <div>
             <div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Pickup</div>
-            <div style="font-size:.88rem;font-weight:600;color:var(--text)">${b.pickup_location||'Not specified'}</div>
+            <div style="font-size:.88rem;font-weight:600;color:var(--text)">${esc(b.pickup_location||'Not specified')}</div>
           </div>
           <div>
             <div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Type</div>
-            <span style="font-size:.75rem;font-weight:600;color:${typeColour};background:rgba(255,255,255,.05);padding:3px 10px;border-radius:100px;border:1px solid ${typeColour}33">${b.lesson_type}</span>
+            <span style="font-size:.75rem;font-weight:600;color:${typeColour};background:rgba(255,255,255,.05);padding:3px 10px;border-radius:100px;border:1px solid ${typeColour}33">${esc(b.lesson_type)}</span>
           </div>
         </div>
       </div>
@@ -2610,7 +2608,7 @@ async function renderInstructorDashboard(el) {
 
     <div class="card-title" style="margin-bottom:12px">Your pupils</div>
     <div class="pupil-list">
-      ${pupils.map(p=>{ const conf=Object.values(p.skills).filter(s=>s==='confident').length; const pct=Math.round((conf/ALL_TOPICS.length)*100); return `<div class="pupil-row" onclick="openPupil('${p.id}')"><div class="pupil-info"><div class="pupil-avatar">${p.name.split(' ').map(n=>n[0]).join('')}</div><div><div class="pupil-name">${p.name}</div><div class="pupil-meta">Started ${formatDate(p.startDate)} · Next: ${p.nextLesson.date}</div></div></div><div class="pupil-stats"><div class="pupil-stat"><div class="pupil-stat-val">${p.totalLessons}</div><div class="pupil-stat-label">Lessons</div></div><div class="pupil-stat"><div class="pupil-stat-val">${pct}%</div><div class="pupil-stat-label">Ready</div></div></div></div>`; }).join('')}
+      ${pupils.map(p=>{ const conf=Object.values(p.skills).filter(s=>s==='confident').length; const pct=Math.round((conf/ALL_TOPICS.length)*100); return `<div class="pupil-row" onclick="openPupil('${p.id}')"><div class="pupil-info"><div class="pupil-avatar">${esc(p.name.split(' ').map(n=>n[0]).join(''))}</div><div><div class="pupil-name">${esc(p.name)}</div><div class="pupil-meta">Started ${formatDate(p.startDate)} · Next: ${p.nextLesson.date}</div></div></div><div class="pupil-stats"><div class="pupil-stat"><div class="pupil-stat-val">${p.totalLessons}</div><div class="pupil-stat-label">Lessons</div></div><div class="pupil-stat"><div class="pupil-stat-val">${pct}%</div><div class="pupil-stat-label">Ready</div></div></div></div>`; }).join('')}
     </div>`;
 }
 
@@ -2622,13 +2620,13 @@ async function renderPupilView(pupilId) {
   const pupil = await fetchPupil(pupilId);
   el.innerHTML = `
     <div class="page-header flex justify-between align-center" style="flex-wrap:wrap;gap:12px">
-      <div><button class="btn-ghost" style="margin-bottom:12px" onclick="navigate('pupils')">← Back</button><div class="page-title">${pupil.name}</div><div class="page-sub">${pupil.totalLessons} lessons · Started ${formatDate(pupil.startDate)}</div></div>
-      <button class="btn-sm-outline" style="color:var(--muted);font-size:.82rem" onclick="archivePupil('${pupil.id}','${pupil.name}')">Archive Pupil</button>
+      <div><button class="btn-ghost" style="margin-bottom:12px" onclick="navigate('pupils')">← Back</button><div class="page-title">${esc(pupil.name)}</div><div class="page-sub">${pupil.totalLessons} lessons · Started ${formatDate(pupil.startDate)}</div></div>
+      <button class="btn-sm-outline" style="color:var(--muted);font-size:.82rem" onclick="archivePupil('${pupil.id}',${esc(JSON.stringify(pupil.name))})">Archive Pupil</button>
     </div>
     <div class="card" style="margin-bottom:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
-      <div><div style="font-size:.7rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Email</div><div style="font-size:.85rem;color:var(--text)">${pupil.email}</div></div>
-      <div><div style="font-size:.7rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Phone</div><div style="font-size:.85rem;color:var(--text)">${pupil.phone||'Not provided'}</div></div>
-      <div><div style="font-size:.7rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Licence No.</div><div style="font-size:.85rem;color:var(--text)">${pupil.license_number||'Not provided'}</div></div>
+      <div><div style="font-size:.7rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Email</div><div style="font-size:.85rem;color:var(--text)">${esc(pupil.email)}</div></div>
+      <div><div style="font-size:.7rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Phone</div><div style="font-size:.85rem;color:var(--text)">${esc(pupil.phone||'Not provided')}</div></div>
+      <div><div style="font-size:.7rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Licence No.</div><div style="font-size:.85rem;color:var(--text)">${esc(pupil.license_number||'Not provided')}</div></div>
       <div><div style="font-size:.7rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Started</div><div style="font-size:.85rem;color:var(--text)">${formatDate(pupil.startDate)}</div></div>
     </div>
     <div class="tabs">
@@ -2643,7 +2641,7 @@ async function renderPupilView(pupilId) {
     </div>
     <div id="tab-add" class="hidden">
       <div class="add-lesson-form">
-        <div style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:20px">Log a lesson for ${pupil.name}</div>
+        <div style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:20px">Log a lesson for ${esc(pupil.name)}</div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="al-date" value="${new Date().toISOString().split('T')[0]}"/></div>
           <div class="form-group"><label class="form-label">Duration</label><select class="form-input" id="al-duration"><option value="60">60 minutes</option><option value="90">90 minutes</option><option value="120">2 hours</option></select></div>
@@ -2652,7 +2650,7 @@ async function renderPupilView(pupilId) {
         <div class="form-group"><label class="form-label">Topics covered</label><div class="topic-select-grid" id="topic-grid">${ALL_TOPICS.map(t=>`<label class="topic-check" onclick="this.classList.toggle('checked')"><input type="checkbox" value="${t}" style="pointer-events:none"/> ${t}</label>`).join('')}</div></div>
         <div class="form-group"><label class="form-label">Notes (visible to pupil & parent)</label><textarea class="form-input compose-input" id="al-notes" placeholder="What went well, what needs work..." style="min-height:100px"></textarea></div>
         <div class="form-group"><label class="form-label">Rating</label><div class="rating-select" id="rating-select">${[1,2,3,4,5].map(n=>`<span class="rating-star${n<=addLessonRating?' active':''}" onclick="setRating(${n})">★</span>`).join('')}</div></div>
-        <div class="form-group"><label class="form-label">Next lesson topics</label><input class="form-input" type="text" id="al-next-topics" placeholder="e.g. Parallel parking" value="${pupil.nextLesson.topics}"/></div>
+        <div class="form-group"><label class="form-label">Next lesson topics</label><input class="form-input" type="text" id="al-next-topics" placeholder="e.g. Parallel parking" value="${esc(pupil.nextLesson.topics)}"/></div>
         <div class="form-group"><label class="form-label">Next lesson date / time</label><input class="form-input" type="text" id="al-next-date" placeholder="e.g. Saturday 16 May, 10:00am" value="${pupil.nextLesson.date}"/></div>
         <div class="form-group"><label class="form-label">Test date <span style="color:var(--muted2);font-weight:400;text-transform:none;letter-spacing:0">(optional — shown on pupil dashboard)</span></label><input class="form-input" type="date" id="al-test-date" value="${pupil.test_date||''}"/></div>
         <div class="flex gap12 align-center" style="margin-top:8px">
@@ -2662,17 +2660,17 @@ async function renderPupilView(pupilId) {
       </div>
     </div>
     <div id="tab-msgs" class="hidden">
-      <div class="messages-list">${pupil.messages.map(m=>`<div class="message-item from-${m.from}"><div class="message-meta"><span class="message-sender">${m.sender}</span><span class="message-time">${m.time}</span></div><div class="message-body">${m.body}</div></div>`).join('')}</div>
-      <div class="compose-area"><textarea class="compose-input" id="compose-text" placeholder="Message ${pupil.name}..."></textarea><button class="btn-send" onclick="sendMessage('${pupilId}')">Send Message</button></div>
+      <div class="messages-list">${pupil.messages.map(m=>`<div class="message-item from-${m.from}"><div class="message-meta"><span class="message-sender">${esc(m.sender)}</span><span class="message-time">${m.time}</span></div><div class="message-body">${esc(m.body)}</div></div>`).join('')}</div>
+      <div class="compose-area"><textarea class="compose-input" id="compose-text" placeholder="Message ${esc(pupil.name)}..."></textarea><button class="btn-send" onclick="sendMessage('${pupilId}')">Send Message</button></div>
     </div>`;
 }
 
 function lessonCardInstructor(l, pupilId) {
   return `<div class="lesson-item" id="lesson-${l.id}" onclick="toggleLesson('${l.id}')">
-    <div class="lesson-header"><div><div class="lesson-num">Lesson ${l.num} · ${l.duration} min</div><div class="lesson-title">${l.title}</div><div class="lesson-date">${formatDate(l.date)}</div></div><div class="lesson-rating">${stars(l.rating)}</div></div>
+    <div class="lesson-header"><div><div class="lesson-num">Lesson ${l.num} · ${l.duration} min</div><div class="lesson-title">${esc(l.title)}</div><div class="lesson-date">${formatDate(l.date)}</div></div><div class="lesson-rating">${stars(l.rating)}</div></div>
     <div class="lesson-body">
-      <div class="lesson-topics">${(l.topics||[]).map(t=>`<span class="topic-chip">${t}</span>`).join('')}</div>
-      <div class="lesson-notes"><strong>Notes</strong>${l.notes||''}</div>
+      <div class="lesson-topics">${(l.topics||[]).map(t=>`<span class="topic-chip">${esc(t)}</span>`).join('')}</div>
+      <div class="lesson-notes"><strong>Notes</strong>${esc(l.notes||'')}</div>
       <div class="video-slot"><div class="video-placeholder"><div class="video-placeholder-icon">▶</div><div>No video attached</div></div></div>
       <div style="display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
         <button class="btn-sm" onclick="event.stopPropagation();editLesson('${l.id}','${pupilId}')">Edit</button>
@@ -2798,9 +2796,9 @@ async function renderPupilsList(el, showArchived = false) {
         return `
           <div class="pupil-row">
             <div class="pupil-info" onclick="openPupil('${p.id}')" style="flex:1;cursor:pointer">
-              <div class="pupil-avatar">${p.name.split(' ').map(n=>n[0]).join('')}</div>
+              <div class="pupil-avatar">${esc(p.name.split(' ').map(n=>n[0]).join(''))}</div>
               <div>
-                <div class="pupil-name">${p.name}</div>
+                <div class="pupil-name">${esc(p.name)}</div>
                 <div class="pupil-meta">${p.totalLessons} lessons logged · ${bCount} bookings · Next: ${p.nextLesson.date}</div>
               </div>
             </div>
@@ -2812,9 +2810,9 @@ async function renderPupilsList(el, showArchived = false) {
             <div style="display:flex;flex-direction:column;gap:6px;margin-left:12px">
               ${showArchived ? `
                 <button class="btn-sm-outline" style="font-size:.72rem;padding:5px 10px;white-space:nowrap" onclick="unarchivePupil('${p.id}')">Restore</button>
-                <button class="btn-sm-outline" style="font-size:.72rem;padding:5px 10px;color:var(--red);border-color:rgba(239,68,68,.3);white-space:nowrap" onclick="deletePupil('${p.id}','${p.name}')">Delete</button>
+                <button class="btn-sm-outline" style="font-size:.72rem;padding:5px 10px;color:var(--red);border-color:rgba(239,68,68,.3);white-space:nowrap" onclick="deletePupil('${p.id}',${esc(JSON.stringify(p.name))})">Delete</button>
               ` : `
-                <button class="btn-sm-outline" style="font-size:.72rem;padding:5px 10px;white-space:nowrap" onclick="archivePupil('${p.id}','${p.name}')">Archive</button>
+                <button class="btn-sm-outline" style="font-size:.72rem;padding:5px 10px;white-space:nowrap" onclick="archivePupil('${p.id}',${esc(JSON.stringify(p.name))})">Archive</button>
               `}
             </div>
           </div>
@@ -2901,14 +2899,14 @@ async function showDayView(dateStr, bookings, lessons) {
               <div class="card" style="border-left:3px solid ${colour}">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
                   <div>
-                    <div style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:4px">${b.invitee_name}</div>
-                    <div style="font-size:.85rem;color:var(--muted)">${b.invitee_email}</div>
+                    <div style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:4px">${esc(b.invitee_name)}</div>
+                    <div style="font-size:.85rem;color:var(--muted)">${esc(b.invitee_email)}</div>
                   </div>
-                  <span style="font-size:.78rem;font-weight:600;color:${colour};background:${colour}18;padding:4px 12px;border-radius:100px;border:1px solid ${colour}33">${b.lesson_type}</span>
+                  <span style="font-size:.78rem;font-weight:600;color:${colour};background:${colour}18;padding:4px 12px;border-radius:100px;border:1px solid ${colour}33">${esc(b.lesson_type)}</span>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px">
                   <div><div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Time</div><div style="font-size:.95rem;font-weight:600;color:var(--text)">${t}</div></div>
-                  <div><div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Pickup</div><div style="font-size:.95rem;font-weight:600;color:var(--text)">${b.pickup_location||'Not specified'}</div></div>
+                  <div><div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Pickup</div><div style="font-size:.95rem;font-weight:600;color:var(--text)">${esc(b.pickup_location||'Not specified')}</div></div>
                   <div><div style="font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Status</div><div style="font-size:.95rem;font-weight:600;color:${b.status==='cancelled'?'var(--red)':b.status==='no-show'?'#f97316':b.status==='completed'?'var(--muted)':'var(--green)'};">${b.status==='cancelled'?'Cancelled':b.status==='no-show'?'No Show':b.status==='completed'?'Completed':'Confirmed'}</div></div>
                 </div>
                 ${b.status !== 'cancelled' && b.status !== 'no-show' ? `
@@ -3001,6 +2999,7 @@ async function renderDiary(el) {
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px">
+      ${(diaryWeekData = { bookings: weekBookings, lessons: weekLessons }, '')}
       ${days.map(day => {
         const dayStr = day.toLocaleDateString('en-GB',{weekday:'short'});
         const dayNum = day.getDate();
@@ -3010,7 +3009,7 @@ async function renderDiary(el) {
         const hasAnything = dayBookings.length > 0 || dayLessons.length > 0;
 
         return `
-          <div style="background:var(--bg2);border:1px solid ${isToday?'var(--blue)':'var(--border)'};border-radius:10px;padding:12px;min-height:120px;cursor:pointer;transition:border-color .2s" onclick="showDayView('${day.toISOString()}', ${JSON.stringify(weekBookings).replace(/'/g, "\\'")}, ${JSON.stringify(weekLessons).replace(/'/g, "\\'")})">
+          <div style="background:var(--bg2);border:1px solid ${isToday?'var(--blue)':'var(--border)'};border-radius:10px;padding:12px;min-height:120px;cursor:pointer;transition:border-color .2s" onclick="showDayView('${day.toISOString()}', diaryWeekData.bookings, diaryWeekData.lessons)">
             <div style="font-size:.72rem;font-weight:600;color:${isToday?'var(--blue)':'var(--muted)'};text-transform:uppercase;letter-spacing:.06em">${dayStr}</div>
             <div style="font-size:1.3rem;font-weight:700;color:${isToday?'var(--blue)':'var(--text)'};margin-bottom:8px">${dayNum}</div>
             ${!hasAnything
@@ -3020,13 +3019,13 @@ async function renderDiary(el) {
                   const colour = b.lesson_type==='Saturday Lesson'?'var(--yellow)':b.lesson_type==='Test'?'#a78bfa':'var(--red)';
                   return `<div style="background:${colour}18;border-left:3px solid ${colour};border-radius:4px;padding:6px 8px;margin-bottom:4px">
                     <div style="font-size:.72rem;font-weight:600;color:${colour}">${t} · Booked</div>
-                    <div style="font-size:.75rem;color:var(--text)">${b.invitee_name}</div>
+                    <div style="font-size:.75rem;color:var(--text)">${esc(b.invitee_name)}</div>
                   </div>`;
                 }).join('')}
                 ${dayLessons.map(l => {
                   return `<div style="background:rgba(139,92,246,.1);border-left:3px solid #a78bfa;border-radius:4px;padding:6px 8px;margin-bottom:4px">
                     <div style="font-size:.72rem;font-weight:600;color:#a78bfa">Logged</div>
-                    <div style="font-size:.75rem;color:var(--text)">${l.pupils?.name||'Unknown'} — ${l.title}</div>
+                    <div style="font-size:.75rem;color:var(--text)">${esc(l.pupils?.name||'Unknown')} — ${esc(l.title)}</div>
                   </div>`;
                 }).join('')}`
             }
@@ -3040,7 +3039,7 @@ async function renderDiary(el) {
         <div class="card-title" style="margin-bottom:12px">This week — ${weekBookings.length} booked · ${weekLessons.length} logged</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           ${weekBookings.map(b => bookingCard(b)).join('')}
-          ${weekLessons.map(l => `<div class="card-sm" style="border-left:3px solid #a78bfa"><div style="display:flex;justify-content:space-between"><div><div style="font-size:.88rem;font-weight:600;color:var(--text)">${l.pupils?.name||'Unknown'} — Lesson ${l.lesson_num}</div><div style="font-size:.78rem;color:var(--muted);margin-top:2px">${formatDate(l.date)} · ${l.duration} min · ${l.title}</div></div><div style="font-size:.78rem;color:#a78bfa;font-weight:600">Logged</div></div></div>`).join('')}
+          ${weekLessons.map(l => `<div class="card-sm" style="border-left:3px solid #a78bfa"><div style="display:flex;justify-content:space-between"><div><div style="font-size:.88rem;font-weight:600;color:var(--text)">${esc(l.pupils?.name||'Unknown')} — Lesson ${l.lesson_num}</div><div style="font-size:.78rem;color:var(--muted);margin-top:2px">${formatDate(l.date)} · ${l.duration} min · ${esc(l.title)}</div></div><div style="font-size:.78rem;color:#a78bfa;font-weight:600">Logged</div></div></div>`).join('')}
         </div>
       </div>
     ` : ''}
@@ -3071,9 +3070,9 @@ async function renderTimeOff(el) {
       <div class="card-title" style="margin-bottom:6px">Pupil Access Code</div>
       <div style="font-size:.8rem;color:var(--muted);margin-bottom:16px">Pupils must enter this code to register. Share it after they first contact you.</div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <input type="text" id="access-code-val" class="form-input" value="${codeData?.code || ''}" style="max-width:200px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:1.1rem"/>
+        <input type="text" id="access-code-val" class="form-input" value="${esc(codeData?.code || '')}" style="max-width:200px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:1.1rem"/>
         <button class="btn-sm" onclick="saveAccessCode()">Update Code</button>
-        <span style="font-size:.78rem;color:var(--muted)">Current: <strong style="color:var(--red)">${codeData?.code || 'Not set'}</strong></span>
+        <span style="font-size:.78rem;color:var(--muted)">Current: <strong style="color:var(--red)">${esc(codeData?.code || 'Not set')}</strong></span>
       </div>
     </div>
 
@@ -3134,7 +3133,7 @@ async function renderTimeOff(el) {
             return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">
               <div>
                 <div style="font-size:.9rem;font-weight:600;color:var(--text)">${d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
-                ${b.reason ? `<div style="font-size:.78rem;color:var(--muted);margin-top:2px">${b.reason}</div>` : ''}
+                ${b.reason ? `<div style="font-size:.78rem;color:var(--muted);margin-top:2px">${esc(b.reason)}</div>` : ''}
               </div>
               <button class="btn-sm-outline" style="font-size:.75rem;color:var(--red);border-color:rgba(255,255,255,0.18)" onclick="removeBlockedDate('${b.id}')">Remove</button>
             </div>`;
@@ -3276,7 +3275,7 @@ async function renderFinances(el) {
             ${catItems.slice(0,5).map(e=>`
               <div class="card-sm" style="display:flex;justify-content:space-between;align-items:center">
                 <div>
-                  <div style="font-size:.88rem;color:var(--text)">${e.notes||e.category}</div>
+                  <div style="font-size:.88rem;color:var(--text)">${esc(e.notes||e.category)}</div>
                   <div style="font-size:.76rem;color:var(--muted)">${formatDate(e.date)}</div>
                 </div>
                 <div style="display:flex;align-items:center;gap:12px">
@@ -3342,8 +3341,6 @@ document.getElementById('login-password').addEventListener('keydown', e => { if(
   <a href="/terms" target="_blank">Terms &amp; Conditions</a>
   <span>·</span>
   <a href="/cookies" target="_blank">Cookie Notice</a>
-  <span>·</span>
-  <span>ICO Reg: C1925568</span>
   <span>·</span>
   <span>Powered by <a href="https://ardvio.com" target="_blank" style="color:var(--muted);">Ardvio</a></span>
 </footer>
