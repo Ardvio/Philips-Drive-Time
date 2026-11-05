@@ -2465,9 +2465,27 @@ async function sendMessage(pupilId) {
   showToast('Message sent');
 }
 
+// Supabase hands back at most 1,000 rows per request. Reading oldest-first with
+// no paging silently dropped the newest rows, so future bookings vanished once the
+// table passed 1,000. Always read lists that grow through this helper.
+async function fetchAllRows(buildQuery) {
+  const rows = [];
+  for (;;) {
+    const { data, error } = await buildQuery().range(rows.length, rows.length + 999);
+    if (error) { console.error(error); showToast("Couldn't load everything. Check your signal and try again."); break; }
+    if (!data || data.length === 0) break;
+    rows.push(...data);
+  }
+  return rows;
+}
+
+function fetchAllBookings() {
+  return fetchAllRows(() => sb.from('bookings').select('*').order('start_time', { ascending: true }).order('id', { ascending: true }));
+}
+
 async function renderBookings(el) {
   await autoCompletePastBookings();
-  const { data: bookings } = await sb.from('bookings').select('*').order('start_time', { ascending: true });
+  const bookings = await fetchAllBookings();
   const upcoming = (bookings||[]).filter(b => new Date(b.start_time) >= new Date() && b.status === 'active');
   const past = (bookings||[]).filter(b => b.status === 'completed' || b.status === 'no-show' || (new Date(b.start_time) < new Date() && b.status === 'active'));
   const { data: pupils } = await sb.from('pupils').select('id, name, email').order('name');
@@ -2573,7 +2591,7 @@ async function submitManualBooking() {
     if (pupil) pupilId = pupil.id;
   }
 
-  await sb.from('bookings').insert({
+  const { error: insertError } = await sb.from('bookings').insert({
     calendly_event_id: 'manual-' + Date.now(),
     invitee_name: name,
     invitee_email: email || '',
@@ -2583,6 +2601,7 @@ async function submitManualBooking() {
     status: 'active',
     pupil_id: pupilId,
   });
+  if (insertError) { console.error(insertError); showToast("Couldn't save the booking. Please try again."); return; }
 
   showToast('Booking added');
   await navigate('bookings');
@@ -2656,7 +2675,7 @@ function renderCalendar(el) {
 async function renderInstructorDashboard(el) {
   const pupils = await fetchAllPupils();
   const totalLessons = pupils.reduce((a,p)=>a+p.totalLessons,0);
-  const { data: bookings } = await sb.from('bookings').select('*').order('start_time', { ascending: true });
+  const bookings = await fetchAllBookings();
   const upcoming = (bookings||[]).filter(b => new Date(b.start_time) >= new Date());
 
   el.innerHTML = `<div class="page-header"><div class="page-title">Good to see you, Philip</div><div class="page-sub">Manage your pupils and track their progress.</div></div>
@@ -2844,7 +2863,7 @@ async function cycleSkill(pupilId, skill, btn, e) {
 async function renderPupilsList(el, showArchived = false) {
   const pupils = await fetchAllPupils(showArchived);
   const activePupils = pupils;
-  const { data: allBookings } = await sb.from('bookings').select('pupil_id').not('pupil_id', 'is', null);
+  const allBookings = await fetchAllRows(() => sb.from('bookings').select('pupil_id').not('pupil_id', 'is', null).order('id', { ascending: true }));
   const bookingCounts = {};
   (allBookings||[]).forEach(b => { bookingCounts[b.pupil_id] = (bookingCounts[b.pupil_id]||0) + 1; });
 
@@ -3015,9 +3034,9 @@ async function markNoShow(bookingId) {
   navigate('diary');
 }
 async function renderDiary(el) {
-  const { data: bookings } = await sb.from('bookings').select('*').order('start_time', { ascending: true });
+  const bookings = await fetchAllBookings();
   // Also fetch all logged lessons to show in diary
-  const { data: allLessons } = await sb.from('lessons').select('*, pupils(name)').order('date', { ascending: true });
+  const allLessons = await fetchAllRows(() => sb.from('lessons').select('*, pupils(name)').order('date', { ascending: true }).order('id', { ascending: true }));
 
   // Get current week start (Monday)
   const now = new Date();
