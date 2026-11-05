@@ -1763,14 +1763,10 @@ async function fetchAllPupils(includeArchived = false) {
   const ids = pupils.map(p => p.id);
 
   // Fetch all related data in parallel — one query each regardless of pupil count
-  const [
-    { data: allLessons },
-    { data: allSkillRows },
-    { data: allMsgs }
-  ] = await Promise.all([
-    sb.from('lessons').select('*').in('pupil_id', ids).order('lesson_num'),
-    sb.from('skills').select('*').in('pupil_id', ids),
-    sb.from('messages').select('*').in('pupil_id', ids).order('created_at')
+  const [allLessons, allSkillRows, allMsgs] = await Promise.all([
+    fetchAllRows(() => sb.from('lessons').select('*').in('pupil_id', ids).order('lesson_num').order('id')),
+    fetchAllRows(() => sb.from('skills').select('*').in('pupil_id', ids).order('id')),
+    fetchAllRows(() => sb.from('messages').select('*').in('pupil_id', ids).order('created_at').order('id'))
   ]);
 
   // Group by pupil_id in memory
@@ -3294,7 +3290,7 @@ async function removeBlockedDate(id) {
 }
 
 async function renderFinances(el) {
-  const { data: expenses } = await sb.from('expenses').select('*').order('date', { ascending: false });
+  const expenses = await fetchAllRows(() => sb.from('expenses').select('*').order('date', { ascending: false }).order('id'));
   const list = expenses || [];
 
   const now = new Date();
